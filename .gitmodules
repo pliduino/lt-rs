@@ -1,0 +1,6 @@
+[submodule "vendor/boost"]
+	path = vendor/boost
+	url = https://github.com/boostorg/boost.git
+[submodule "vendor/libtorrent"]
+	path = vendor/libtorrent
+	url = https://github.com/arvidn/libtorrent

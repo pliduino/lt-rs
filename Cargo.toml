@@ -1,0 +1,28 @@
+[package]
+name = "lt-rs"
+version = "0.1.0"
+edition = "2024"
+description = "Libtorrent bindings for rust"
+repository = "https://github.com/pliduino/lt-rs"
+
+[lints.rust]
+dead_code = "allow"
+
+[dependencies]
+tracing = "0.1.41"
+cxx = "1.0.186"
+bitflags = "2.9.4"
+thiserror = "2.0.16"
+base64 = "0.22.1"
+
+[build-dependencies]
+cxx-build = "1.0.186"
+pkg-config = "0.3.32"
+cmake = "0.1.54"
+
+# [profile.release]
+# lto = true
+# strip = true
+# opt-level = 3
+# panic = "abort"
+# codegen-units = 1
