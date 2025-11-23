@@ -1,8 +1,8 @@
 use std::{env, path::PathBuf, process::Command};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("cargo:rerun-if-changed=boost");
-    println!("cargo:rerun-if-changed=libtorrent");
+    println!("cargo:rerun-if-changed=vendor/boost");
+    println!("cargo:rerun-if-changed=vendor/libtorrent");
 
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR")?;
@@ -16,7 +16,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let boost_lib_dir = boost_build.join("lib");
     let libtorrent_lib_dir = libtorrent_build.join("torrent/gcc-14/release/cxxstd-14-iso/deprecated-functions-off/link-static/threading-multi/visibility-hidden");
 
-    if std::fs::exists(&boost_build)? {
+    if !std::fs::exists(&boost_build)? {
         std::fs::create_dir_all(&boost_build).unwrap();
 
         println!("cargo:warning=Building Boost (static)...");
@@ -79,7 +79,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("cargo:rustc-link-lib={}", lib);
     }
 
-    if std::fs::exists(&libtorrent_build)? {
+    if !std::fs::exists(&libtorrent_build)? {
         let mut b2 = Command::new("../boost/b2");
         b2.current_dir(&libtorrent_dir)
             .args([ 
@@ -121,14 +121,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     cxx.file("src/lt.cpp")
         // This is a hack until we find why the try_signal library is not being built.
-        .file("libtorrent/deps/try_signal/signal_error_code.cpp")
-        .file("libtorrent/deps/try_signal/try_signal.cpp")
-        .include("libtorrent/deps/try_signal")
+        .file(libtorrent_dir.join("deps/try_signal/signal_error_code.cpp"))
+        .file(libtorrent_dir.join("deps/try_signal/try_signal.cpp"))
+        .include(libtorrent_dir.join("deps/try_signal"))
         .std("c++14")
         .include(&manifest_dir)
         .include(manifest_dir.clone() + "/target/cxxbridge/lt-rs")
-        .include(manifest_dir.clone() + "/libtorrent/include")
-        .include(manifest_dir + "/boost")
+        .include(libtorrent_dir.join("include"))
+        .include(boost_dir)
         .define("BOOST_ASIO_HEADER_ONLY", Some("1"))
         .flag_if_supported("-O3")
         .compile("ltbridge");
