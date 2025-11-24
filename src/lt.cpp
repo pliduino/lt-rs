@@ -1,6 +1,6 @@
 #include "./lt.h"
 
-#include "src/ffi.rs.h"
+#include "lt-rs/src/ffi.rs.h"
 
 #include <libtorrent/read_resume_data.hpp>
 #include <libtorrent/torrent_handle.hpp>
