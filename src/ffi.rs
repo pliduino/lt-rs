@@ -76,7 +76,7 @@ pub(crate) mod ffi {
         fn get(self: &AlertListCpp, index: usize) -> *mut alert;
         fn len(self: &AlertListCpp) -> usize;
 
-        fn lt_alert_type(alert: *mut alert) -> i32;
+        unsafe fn lt_alert_type(alert: *mut alert) -> i32;
 
         // ==========================  Torrent Finished  ===========================
         type torrent_finished_alert;
