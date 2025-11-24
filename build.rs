@@ -36,23 +36,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         // b2 build
         let mut b2 = Command::new("./b2");
-        b2.current_dir(&boost_dir)
-            .args([
-                "link=static",
-                "threading=multi",
-                "cxxflags=\"-std=c++14\"",
-                "runtime-link=static",
-                "variant=release",
-                "--with-system",
-                "--with-asio",
-                "--with-filesystem",
-                "--with-chrono",
-                "--with-random",
-                "--with-date_time",
-                "--with-thread",
-                &format!("--build-dir={}", boost_build.display()),
-                &format!("--stagedir={}", boost_build.display()),
-            ]);
+        b2.current_dir(&boost_dir).args([
+            "link=static",
+            "threading=multi",
+            "cxxflags=\"-std=c++14\"",
+            "runtime-link=static",
+            "variant=release",
+            "--with-system",
+            "--with-asio",
+            "--with-filesystem",
+            "--with-chrono",
+            "--with-random",
+            "--with-date_time",
+            "--with-thread",
+            &format!("--build-dir={}", boost_build.display()),
+            &format!("--stagedir={}", boost_build.display()),
+        ]);
 
         let status = b2.status().expect("Failed to build Boost");
         assert!(status.success(), "Boost build failed");
@@ -72,31 +71,27 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("cargo:rustc-link-lib=static={}", lib);
     }
 
-    for lib in [
-        "ssl",
-        "crypto",
-    ] {
+    for lib in ["ssl", "crypto"] {
         println!("cargo:rustc-link-lib={}", lib);
     }
 
     if !std::fs::exists(&libtorrent_build)? {
         let mut b2 = Command::new("../boost/b2");
-        b2.current_dir(&libtorrent_dir)
-            .args([ 
-                "link=static",
-                "threading=multi",
-        "cxxflags=\"-std=c++14\"",
-        "cxxstd=14",
-        "runtime-link=static",
-        "variant=release",
-        "boost-link=static",
-        "define=BOOST_ASIO_NO_DEPRECATED",
-        "define=BOOST_ASIO_HEADER_ONLY",
-        "deprecated-functions=off",
-        &format!("--build-dir={}",libtorrent_build.display()),
-        &format!("--stagedir={}",libtorrent_build.display()),
-        &format!("include={}", boost_dir.display()),
-      ]);
+        b2.current_dir(&libtorrent_dir).args([
+            "link=static",
+            "threading=multi",
+            "cxxflags=\"-std=c++14\"",
+            "cxxstd=14",
+            "runtime-link=static",
+            "variant=release",
+            "boost-link=static",
+            "define=BOOST_ASIO_NO_DEPRECATED",
+            "define=BOOST_ASIO_HEADER_ONLY",
+            "deprecated-functions=off",
+            &format!("--build-dir={}", libtorrent_build.display()),
+            &format!("--stagedir={}", libtorrent_build.display()),
+            &format!("include={}", boost_dir.display()),
+        ]);
 
         let status = b2.status().expect("Failed to build libtorrent");
         assert!(status.success(), "libtorrent build failed");
@@ -108,9 +103,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
     println!("cargo:rustc-link-lib=static=torrent-rasterbar");
 
-
     let mut cxx = cxx_build::bridge("src/ffi.rs");
-
 
     if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("windows") {
         cxx.define("_WIN32_WINNT", Some("0x0A00"));
@@ -126,7 +119,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .include(libtorrent_dir.join("deps/try_signal"))
         .std("c++14")
         .include(&manifest_dir)
-        .include(manifest_dir.clone() + "/target/cxxbridge/lt-rs")
+        .include(out_dir.join("/target/cxxbridge/lt-rs"))
         .include(libtorrent_dir.join("include"))
         .include(boost_dir)
         .define("BOOST_ASIO_HEADER_ONLY", Some("1"))
