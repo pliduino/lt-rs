@@ -119,7 +119,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .include(libtorrent_dir.join("deps/try_signal"))
         .std("c++14")
         .include(&manifest_dir)
-        .include(out_dir.join("/target/cxxbridge/lt-rs"))
         .include(libtorrent_dir.join("include"))
         .include(boost_dir)
         .define("BOOST_ASIO_HEADER_ONLY", Some("1"))
