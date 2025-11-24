@@ -57,18 +57,18 @@ impl AlertIter<'_> {
             return None;
         }
 
-        match ffi::lt_alert_type(alert) {
-            1 => {
-                return Some(Alert::TorrentAlert {
-                    handle: unsafe { ffi::lt_alert_torrent_finished_handle(alert).into() },
-                    alert: TorrentAlert::PeerAlert {
-                        endpoint: unsafe { ffi::lt_alert_peer_endpoint(alert).into() },
-                        pid: unsafe { ffi::lt_alert_peer_pid(alert).into() },
-                    },
-                });
-            }
-            _ => return None,
-        }
+        // match ffi::lt_alert_type(alert) {
+        //     1 => {
+        //         return Some(Alert::TorrentAlert {
+        //             handle: unsafe { ffi::lt_alert_torrent_finished_handle(alert).into() },
+        //             alert: TorrentAlert::PeerAlert {
+        //                 endpoint: unsafe { ffi::lt_alert_peer_endpoint(alert).into() },
+        //                 pid: unsafe { ffi::lt_alert_peer_pid(alert).into() },
+        //             },
+        //         });
+        //     }
+        //     _ => return None,
+        // }
 
         // SAFETY: It's safe to cast raw pointers due to LtSession guaranteeing that the alerts are valid.
         // Calling them is safe as the cast would fail if the pointer was invalid in any form
