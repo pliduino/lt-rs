@@ -5,6 +5,115 @@ pub(crate) mod ffi {
         inner: [u8; 32],
     }
 
+    enum AlertType {
+        TorrentAdded = 3,
+        TorrentRemoved = 4,
+        ReadPiece = 5,
+        FileCompleted = 6,
+        FileRenamed = 7,
+        FileRenameFailed = 8,
+        Performance = 9,
+        StateChanged = 10,
+        TrackerError = 11,
+        TrackerWarning = 12,
+        ScrapeReply = 13,
+        ScrapeFailed = 14,
+        TrackerReply = 15,
+        DhtReply = 16,
+        TrackerAnnounce = 17,
+        HashFailed = 18,
+        PeerBan = 19,
+        PeerUnsnubbed = 20,
+        PeerSnubbed = 21,
+        PeerError = 22,
+        PeerConnnect = 23,
+        PeerDisconnected = 24,
+        InvalidRequest = 25,
+        TorrentFinished = 26,
+        PieceFinished = 27,
+        RequestDropped = 28,
+        BlockTimeout = 29,
+        BlockFinished = 30,
+        BlockDownloading = 31,
+        UnwantedBlock = 32,
+        StorageMoved = 33,
+        StorageMovedFailed = 34,
+        TorrentDeleted = 35,
+        TorrentDeleteFailed = 36,
+        SaveResumeData = 37,
+        SaveResumeDataFailed = 38,
+        TorrentPaused = 39,
+        TorrentResumed = 40,
+        TorrentChecked = 41,
+        UrlSeed = 42,
+        FileError = 43,
+        MetadataFailed = 44,
+        MetadataReceived = 45,
+        UdpError = 46,
+        ExternalIp = 47,
+        ListenFailed = 48,
+        ListenSucceeded = 49,
+        PortmapError = 50,
+        Portmap = 51,
+        PortmapLog = 52,
+        FastresumeRejected = 53,
+        PeerBlocked = 54,
+        DhtAnnounce = 55,
+        DhtGetPeers = 56,
+        Stats = 57,
+        CacheFlushed = 58,
+        AnonymousMode = 59,
+        LsdPeer = 60,
+        Trackerid = 61,
+        DhtBootstrap = 62,
+        TorrentError = 64,
+        TorrentNeedCert = 65,
+        IncomingConnection = 66,
+        AddTorrent = 67,
+        StateUpdate = 68,
+        MmapCache = 69,
+        SessionStats = 70,
+        DhtError = 73,
+        DhtImmutableItem = 74,
+        DhtMutableItem = 75,
+        DhtPut = 76,
+        I2p = 77,
+        DhtOutgoingGetPeers = 78,
+        Log = 79,
+        TorrentLog = 80,
+        PeerLog = 81,
+        LsdError = 82,
+        DhtStats = 83,
+        IncomingRequest = 84,
+        DhtLog = 85,
+        DhtPkt = 86,
+        DhtGetPeersReply = 87,
+        DhtDirectResponse = 88,
+        PickerLog = 89,
+        SessionError = 90,
+        DhtLiveNodes = 91,
+        SessionStatsHeader = 92,
+        DhtSampleInfohashes = 93,
+        BlockUploaded = 94,
+        AlertsDropped = 95,
+        Socks5 = 96,
+        FilePrio = 97,
+        OversizedFile = 98,
+        TorrentConflict = 99,
+        PeerInfo = 100,
+        FileProgress = 101,
+        PieceInfo = 102,
+        PieceAvailability = 103,
+        TrackerList = 104,
+
+        Unknown,
+    }
+
+    struct CastAlertRaw {
+        type_: AlertType,
+        alert: *mut alert,
+    }
+
     unsafe extern "C++" {
         include!("src/lt.h");
 
@@ -22,7 +131,7 @@ pub(crate) mod ffi {
             params: &add_torrent_params,
         ) -> UniquePtr<torrent_handle>;
         fn lt_session_async_add_torrent(session: Pin<&mut session>, params: &add_torrent_params);
-        fn lt_session_pop_alerts(session: Pin<&mut session>) -> UniquePtr<AlertListCpp>;
+        fn lt_session_pop_alerts(session: Pin<&mut session>) -> Vec<CastAlertRaw>;
         fn lt_session_post_torrent_updates(session: Pin<&mut session>, flags: u32);
 
         // ╔===========================================================================╗
@@ -68,74 +177,6 @@ pub(crate) mod ffi {
         // ║                                  Alerts                                   ║
         // ╚===========================================================================╝
 
-        /// Unsafe type, don't use it directly
-        type AlertListCpp;
         type alert;
-
-        /// Returns nullptr if index is out of range
-        fn get(self: &AlertListCpp, index: usize) -> *mut alert;
-        fn len(self: &AlertListCpp) -> usize;
-
-        unsafe fn lt_alert_type(alert: *mut alert) -> i32;
-
-        // ==========================  Torrent Finished  ===========================
-        type torrent_finished_alert;
-        unsafe fn lt_alert_torrent_finished_cast(alert: *mut alert) -> *mut torrent_finished_alert;
-        unsafe fn lt_alert_torrent_finished_handle(
-            alert: *mut torrent_finished_alert,
-        ) -> UniquePtr<torrent_handle>;
-
-        // =============================  Add Torrent  =============================
-        type add_torrent_alert;
-        unsafe fn lt_alert_add_torrent_cast(alert: *mut alert) -> *mut add_torrent_alert;
-        unsafe fn lt_alert_add_torrent_handle(
-            alert: *mut add_torrent_alert,
-        ) -> UniquePtr<torrent_handle>;
-        // TODO: Convert errors properly
-        unsafe fn lt_alert_add_torrent_error(alert: *mut add_torrent_alert) -> i32;
-        unsafe fn lt_alert_add_torrent_params(
-            alert: *mut add_torrent_alert,
-        ) -> UniquePtr<add_torrent_params>;
-
-        // ============================  State Changed  ============================
-        type state_changed_alert;
-        unsafe fn lt_alert_state_changed_cast(alert: *mut alert) -> *mut state_changed_alert;
-        unsafe fn lt_alert_state_changed_handle(
-            alert: *mut state_changed_alert,
-        ) -> UniquePtr<torrent_handle>;
-        unsafe fn lt_alert_state_changed_state(alert: *mut state_changed_alert) -> u8;
-        unsafe fn lt_alert_state_changed_prev_state(alert: *mut state_changed_alert) -> u8;
-
-        // ============================  State Update  =============================
-        type state_update_alert;
-
-        unsafe fn lt_alert_state_update_cast(alert: *mut alert) -> *mut state_update_alert;
-        unsafe fn lt_alert_state_update_status(
-            alert: *mut state_update_alert,
-        ) -> UniquePtr<CxxVector<torrent_status>>;
-
-        // ==========================  Save Resume Data  ===========================
-        type save_resume_data_alert;
-
-        unsafe fn lt_alert_save_resume_data_cast(alert: *mut alert) -> *mut save_resume_data_alert;
-        unsafe fn lt_alert_save_resume_data_handle(
-            alert: *mut save_resume_data_alert,
-        ) -> UniquePtr<torrent_handle>;
-        unsafe fn lt_alert_save_resume_data_params(
-            alert: *mut save_resume_data_alert,
-        ) -> UniquePtr<add_torrent_params>;
-
-        // =======================  Save Resume Data Failed  =======================
-        type save_resume_data_failed_alert;
-
-        unsafe fn lt_alert_save_resume_data_failed_cast(
-            alert: *mut alert,
-        ) -> *mut save_resume_data_failed_alert;
-        unsafe fn lt_alert_save_resume_data_failed_handle(
-            alert: *mut save_resume_data_failed_alert,
-        ) -> UniquePtr<torrent_handle>;
-        unsafe fn lt_alert_save_resume_data_failed_error(
-            alert: *mut save_resume_data_failed_alert,
-        ) -> i32;
     }
 }

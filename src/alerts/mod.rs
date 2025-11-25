@@ -1,10 +1,6 @@
-use std::{fmt::Display, ptr::NonNull};
-
-use cxx::UniquePtr;
-
 use crate::{
     add_torrent_params::AddTorrentParams,
-    ffi::ffi::{self, save_resume_data_alert},
+    ffi::ffi::{self},
     session::LtSession,
     settings_pack::SettingsPack,
     torrent_handle::TorrentHandle,
@@ -14,7 +10,7 @@ use crate::{
 mod torrent_alert;
 mod torrent_state;
 
-pub use torrent_alert::TorrentAlert;
+pub use torrent_alert::{AddTorrentAlert, TorrentAlert, TorrentFinishedAlert};
 pub use torrent_state::TorrentState;
 
 type TcpEndpoint = String;
@@ -24,159 +20,6 @@ type UserData = String;
 
 pub type ErrorCode = i32;
 pub type PieceIndex = i32;
-
-pub struct AlertList {
-    inner: UniquePtr<ffi::AlertListCpp>,
-}
-
-pub struct AlertIter<'a> {
-    inner: &'a UniquePtr<ffi::AlertListCpp>,
-    index: usize,
-}
-
-impl AlertList {
-    pub(crate) fn new(inner: UniquePtr<ffi::AlertListCpp>) -> AlertList {
-        AlertList { inner }
-    }
-
-    pub fn iter(&self) -> AlertIter {
-        AlertIter {
-            inner: &self.inner,
-            index: 0,
-        }
-    }
-}
-
-//TODO: Find a better way than manually casting every possible alert type
-//TODO: Maybe only iterate over alerts that are enabled?
-impl AlertIter<'_> {
-    pub fn get_current(&self) -> Option<Alert> {
-        let alert = self.inner.get(self.index);
-
-        if alert.is_null() {
-            return None;
-        }
-
-        // match ffi::lt_alert_type(alert) {
-        //     1 => {
-        //         return Some(Alert::TorrentAlert {
-        //             handle: unsafe { ffi::lt_alert_torrent_finished_handle(alert).into() },
-        //             alert: TorrentAlert::PeerAlert {
-        //                 endpoint: unsafe { ffi::lt_alert_peer_endpoint(alert).into() },
-        //                 pid: unsafe { ffi::lt_alert_peer_pid(alert).into() },
-        //             },
-        //         });
-        //     }
-        //     _ => return None,
-        // }
-
-        // SAFETY: It's safe to cast raw pointers due to LtSession guaranteeing that the alerts are valid.
-        // Calling them is safe as the cast would fail if the pointer was invalid in any form
-        if let Some(torrent_finished) =
-            NonNull::new(unsafe { ffi::lt_alert_torrent_finished_cast(alert) })
-        {
-            return Some(Alert::TorrentAlert {
-                handle: unsafe {
-                    ffi::lt_alert_torrent_finished_handle(torrent_finished.as_ptr()).into()
-                },
-                alert: TorrentAlert::TorrentFinished,
-            });
-        }
-
-        if let Some(add_torrent) = NonNull::new(unsafe { ffi::lt_alert_add_torrent_cast(alert) }) {
-            return Some(Alert::TorrentAlert {
-                handle: unsafe { ffi::lt_alert_add_torrent_handle(add_torrent.as_ptr()).into() },
-                alert: TorrentAlert::AddTorrent {
-                    params: unsafe {
-                        ffi::lt_alert_add_torrent_params(add_torrent.as_ptr()).into()
-                    },
-                    error: unsafe { ffi::lt_alert_add_torrent_error(add_torrent.as_ptr()) },
-                },
-            });
-        }
-
-        if let Some(state_changed) =
-            NonNull::new(unsafe { ffi::lt_alert_state_changed_cast(alert) })
-        {
-            return Some(Alert::TorrentAlert {
-                handle: unsafe {
-                    ffi::lt_alert_state_changed_handle(state_changed.as_ptr()).into()
-                },
-                alert: TorrentAlert::StateChanged {
-                    state: unsafe {
-                        ffi::lt_alert_state_changed_state(state_changed.as_ptr()).into()
-                    },
-                    prev_state: unsafe {
-                        ffi::lt_alert_state_changed_prev_state(state_changed.as_ptr()).into()
-                    },
-                },
-            });
-        }
-
-        if let Some(state_update) = NonNull::new(unsafe { ffi::lt_alert_state_update_cast(alert) })
-        {
-            let raw_status = unsafe { ffi::lt_alert_state_update_status(state_update.as_ptr()) };
-
-            let mut status = vec![];
-
-            for i in 0..raw_status.len() {
-                status.push(unsafe { raw_status.get_unchecked(i).into() });
-            }
-
-            return Some(Alert::StateUpdate { status });
-        }
-
-        if let Some(save_resume_data) =
-            NonNull::new(unsafe { ffi::lt_alert_save_resume_data_cast(alert) })
-        {
-            return Some(Alert::TorrentAlert {
-                handle: unsafe {
-                    ffi::lt_alert_save_resume_data_handle(save_resume_data.as_ptr()).into()
-                },
-                alert: TorrentAlert::SaveResumeData {
-                    params: unsafe {
-                        ffi::lt_alert_save_resume_data_params(save_resume_data.as_ptr()).into()
-                    },
-                },
-            });
-        }
-
-        if let Some(save_resume_data_failed) =
-            NonNull::new(unsafe { ffi::lt_alert_save_resume_data_failed_cast(alert) })
-        {
-            return Some(Alert::TorrentAlert {
-                handle: unsafe {
-                    ffi::lt_alert_save_resume_data_failed_handle(save_resume_data_failed.as_ptr())
-                        .into()
-                },
-                alert: TorrentAlert::SaveResumeDataFailed {
-                    error: unsafe {
-                        ffi::lt_alert_save_resume_data_failed_error(
-                            save_resume_data_failed.as_ptr(),
-                        )
-                    },
-                },
-            });
-        }
-
-        Some(Alert::NotImplemented)
-    }
-}
-
-impl Iterator for AlertIter<'_> {
-    type Item = Alert;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let alert = self.get_current();
-        match alert {
-            Some(alert) => {
-                self.index += 1;
-                Some(alert)
-            }
-            None => None,
-        }
-    }
-}
 
 /// Struct to hold information about a single DHT routing table bucket
 struct DhtRoutingBucket {
@@ -215,10 +58,7 @@ pub enum Alert {
     /// This is a base variant for alerts that are associated with a specific torrent. It contains a handle to the torrent.
     ///
     /// Note that by the time the client receives a TorrentAlert, its handle member may be invalid.
-    TorrentAlert {
-        handle: TorrentHandle,
-        alert: TorrentAlert,
-    },
+    TorrentAlert(TorrentAlert),
     /// This alert is only posted when requested by the user, by calling [`LtSession::post_torrent_updates()`] on the session.
     /// It contains the torrent status of all torrents that changed since last time this message was posted.
     /// Its category is [`AlertCategory::Status`], but it's not subject to filtering, since it's only manually posted anyway.
@@ -235,12 +75,27 @@ pub enum Alert {
     // TrackerReply,
 }
 
+impl From<ffi::CastAlertRaw> for Alert {
+    fn from(value: ffi::CastAlertRaw) -> Self {
+        match value.type_ {
+            ffi::AlertType::TorrentFinished => Alert::TorrentAlert(TorrentAlert::TorrentFinished(
+                TorrentFinishedAlert(value.alert),
+            )),
+            ffi::AlertType::AddTorrent => {
+                Alert::TorrentAlert(TorrentAlert::AddTorrent(AddTorrentAlert(value.alert)))
+            }
+            ffi::AlertType::Unknown => Alert::NotImplemented,
+            _ => Alert::NotImplemented,
+        }
+    }
+}
+
 impl Alert {
     pub fn category(&self) -> AlertCategory {
         match self {
-            Alert::TorrentAlert { alert, .. } => match alert {
+            Alert::TorrentAlert(alert) => match alert {
                 TorrentAlert::AddTorrent { .. } => AlertCategory::Status,
-                TorrentAlert::TorrentFinished => AlertCategory::Status,
+                TorrentAlert::TorrentFinished(_) => AlertCategory::Status,
                 TorrentAlert::TorrentRemoved { .. } => AlertCategory::Status,
                 TorrentAlert::ReadPiece { .. } => AlertCategory::Storage,
                 TorrentAlert::StateChanged { .. } => AlertCategory::Status,

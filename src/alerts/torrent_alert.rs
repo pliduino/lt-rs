@@ -1,10 +1,18 @@
 use crate::{
     add_torrent_params::AddTorrentParams,
     alerts::{ErrorCode, InfoHash, PeerId, PieceIndex, TcpEndpoint, TorrentState, UserData},
+    ffi::ffi,
     torrent_handle::TorrentHandle,
 };
 
-#[derive(Debug)]
+use cxx::UniquePtr;
+
+pub struct TorrentFinishedAlert(pub(super) *mut ffi::alert);
+pub struct AddTorrentAlert(pub(super) *mut ffi::alert);
+pub struct StateChangedAlert(pub(super) *mut ffi::alert);
+pub struct StateUpdateAlert(pub(super) *mut ffi::alert);
+pub struct SaveResumeDataAlert(pub(super) *mut ffi::alert);
+
 pub enum TorrentAlert {
     /// This alert is generated when a torrent switches from being a downloader to a seed.
     /// It will only be generated once per torrent.
@@ -12,7 +20,7 @@ pub enum TorrentAlert {
     ///
     /// ## Alert Category
     /// [`AlertCategory::Status`]
-    TorrentFinished,
+    TorrentFinished(TorrentFinishedAlert),
     /// # NOT IMPLEMENTED
     /// The [`TorrentAlert::TorrentRemoved`] is posted whenever a torrent is removed.
     /// Since the torrent handle in its base variant will usually be invalid (since the torrent is already removed)
@@ -33,13 +41,7 @@ pub enum TorrentAlert {
     ///
     /// The [`TorrentHandle`] acts as a weak_ptr, even though its object no longer exists,
     /// it can still compare equal to another weak pointer which points to the same non-existent object.
-    TorrentRemoved {
-        info_hash: InfoHash,
-        /// user_data as set in add_torrent_params at torrent creation.
-        /// This can be used to associate this torrent with related data in the client application
-        /// more efficiently than info_hashes.
-        user_data: UserData,
-    },
+    TorrentRemoved {},
     /// # NOT IMPLEMENTED
     /// This alert is posted when the asynchronous read operation initiated by a call to [`TorrentHandle::read_piece()`] is completed.
     /// If the read failed, the torrent is paused and an error state is set and the buffer member of the alert is 0.
@@ -60,26 +62,7 @@ pub enum TorrentAlert {
     ///
     /// ## Alert Category
     /// [`AlertCategory::Status`]
-    AddTorrent {
-        /// This contains copies of the most important fields from the original [`AddTorrentParams`] object,
-        /// passed to [`LtSession::add_torrent()`] or [`LtSession::async_add_torrent()`].
-        ///
-        /// Specifically, these fields are copied:
-        ///
-        /// * version
-        /// * ti
-        /// * name
-        /// * save_path
-        /// * userdata
-        /// * tracker_id
-        /// * flags
-        /// * info_hash
-        ///
-        /// The info_hash field will be updated with the info-hash of the torrent specified by ti.
-        params: AddTorrentParams,
-        /// Set to the error, if one occurred while adding the torrent.
-        error: ErrorCode,
-    },
+    AddTorrent(AddTorrentAlert),
     /// Generated whenever a torrent changes its state.
     ///
     /// ## Alert Category
