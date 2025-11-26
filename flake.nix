@@ -1,5 +1,5 @@
 {
-  description = "Aurora Development Shell";
+  description = "lt-rs Development Shell";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -16,12 +16,6 @@
       system:
       let
         pkgs = import nixpkgs { inherit system; };
-
-        dlopenLibraries = with pkgs; [
-          libxkbcommon
-          vulkan-loader
-          wayland
-        ];
       in
       {
         devShell = pkgs.mkShell {
@@ -37,11 +31,6 @@
             libcxx
             openssl
           ];
-
-          nativeBuildInputs = with pkgs; [
-          ];
-
-          env.RUSTFLAGS = "-C link-arg=-Wl,-rpath,${pkgs.lib.makeLibraryPath dlopenLibraries}";
         };
       }
     );
