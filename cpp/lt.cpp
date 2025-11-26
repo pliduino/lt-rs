@@ -181,7 +181,6 @@ AlertType map_alert_type(int type) {
     return AlertType::DhtAnnounce;
   case lt::dht_get_peers_alert::alert_type:
     return AlertType::DhtGetPeers;
-
 #if TORRENT_ABI_VERSION <= 2
   case lt::stats_alert::alert_type:
     return AlertType::Stats;

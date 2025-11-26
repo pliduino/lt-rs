@@ -1,4 +1,8 @@
-use std::{env, path::PathBuf, process::Command};
+use std::{
+    env, fs,
+    path::{Path, PathBuf},
+    process::Command,
+};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("cargo:rerun-if-changed=vendor/boost");
@@ -112,7 +116,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     cxx.define("TORRENT_NO_DEPRECATE", Some("1"));
 
-    cxx.file("src/lt.cpp")
+    let cxx_src_files = find_files(Path::new("cpp"), "cpp");
+    let cxx_header_files = find_files(Path::new("cpp"), "h");
+
+    cxx.files(&cxx_src_files)
         // This is a hack until we find why the try_signal library is not being built.
         .file(libtorrent_dir.join("deps/try_signal/signal_error_code.cpp"))
         .file(libtorrent_dir.join("deps/try_signal/try_signal.cpp"))
@@ -125,9 +132,33 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .flag_if_supported("-O3")
         .compile("ltbridge");
 
-    println!("cargo:rerun-if-changed=src/lt.cpp");
-    println!("cargo:rerun-if-changed=src/lt.h");
+    for header_file in &cxx_header_files {
+        println!("cargo:rerun-if-changed={}", header_file.display());
+    }
+    for src_file in &cxx_src_files {
+        println!("cargo:rerun-if-changed={}", src_file.display());
+    }
     println!("cargo:rerun-if-changed=src/ffi.rs");
 
     Ok(())
+}
+
+fn find_files(dir: &Path, ext: &str) -> Vec<PathBuf> {
+    fn find_cpp_recursive(dir: &Path, ext: &str, out: &mut Vec<PathBuf>) {
+        if let Ok(entries) = fs::read_dir(dir) {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if path.is_dir() {
+                    find_cpp_recursive(&path, ext, out);
+                } else if path.extension().map(|e| e == ext).unwrap_or(false) {
+                    out.push(path);
+                }
+            }
+        }
+    }
+
+    let mut files = Vec::new();
+    find_cpp_recursive(dir, ext, &mut files);
+
+    files
 }
