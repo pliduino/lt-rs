@@ -1,10 +1,9 @@
 use crate::alerts::{
-    AddTorrentAlert, ReadPieceAlert, SaveResumeDataAlert, StateChangedAlert, TorrentAddedAlert,
-    TorrentFinishedAlert, TorrentRemovedAlert, tracker_alert::TrackerAlert,
+    AddTorrentAlert, ReadPieceAlert, SaveResumeDataAlert, SaveResumeDataFailedAlert,
+    StateChangedAlert, TorrentFinishedAlert, TorrentRemovedAlert, tracker_alert::TrackerAlert,
 };
 
 pub enum TorrentAlert {
-    TorrentAdded(TorrentAddedAlert),
     /// This alert is generated when a torrent switches from being a downloader to a seed.
     /// It will only be generated once per torrent.
     /// It contains a [`TorrentHandle`] to the torrent in question.
@@ -65,7 +64,7 @@ pub enum TorrentAlert {
     SaveResumeData(SaveResumeDataAlert),
     /// This alert is generated instead of [`TorrentAlert::SaveResumeData`] if there was an error generating
     /// the resume data. error describes what went wrong.
-    SaveResumeDataFailed(SaveResumeDataAlert),
+    SaveResumeDataFailed(SaveResumeDataFailedAlert),
     /// The peer alert is a base variant for alerts that refer to a specific peer.
     /// It includes all the information to identify the peer. i.e. ip and peer-id.
     PeerAlert(PeerAlert),

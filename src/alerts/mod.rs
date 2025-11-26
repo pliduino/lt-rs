@@ -15,7 +15,7 @@ macro_rules! define_alerts {
 ] => {
     paste::paste! {
         $(
-            pub struct [<$variant Alert>](pub(super) *mut ffi::alert);
+            pub struct [<$variant Alert>](pub(super) *mut ffi::[<$variant:snake _alert>]);
         )*
 
         // Sadly this macro does not work with CXX, so we have to manually
@@ -37,7 +37,7 @@ macro_rules! define_alerts {
 }
 
 define_alerts![
-    TorrentAdded = 3,
+    //TorrentAdded = 3,
     TorrentRemoved = 4,
     ReadPiece = 5,
     FileCompleted = 6,
@@ -57,7 +57,7 @@ define_alerts![
     PeerUnsnubbed = 20,
     PeerSnubbed = 21,
     PeerError = 22,
-    PeerConnnect = 23,
+    PeerConnect = 23,
     PeerDisconnected = 24,
     InvalidRequest = 25,
     TorrentFinished = 26,
@@ -91,9 +91,9 @@ define_alerts![
     PeerBlocked = 54,
     DhtAnnounce = 55,
     DhtGetPeers = 56,
-    Stats = 57,
+    // Stats = 57,
     CacheFlushed = 58,
-    AnonymousMode = 59,
+    // AnonymousMode = 59,
     LsdPeer = 60,
     Trackerid = 61,
     DhtBootstrap = 62,
@@ -102,7 +102,7 @@ define_alerts![
     IncomingConnection = 66,
     AddTorrent = 67,
     StateUpdate = 68,
-    MmapCache = 69,
+    // MmapCache = 69,
     SessionStats = 70,
     DhtError = 73,
     DhtImmutableItem = 74,
@@ -194,15 +194,49 @@ pub enum Alert {
 
 impl From<ffi::CastAlertRaw> for Alert {
     fn from(value: ffi::CastAlertRaw) -> Self {
-        match value.type_ {
-            ffi::AlertType::TorrentFinished => Alert::TorrentAlert(TorrentAlert::TorrentFinished(
-                TorrentFinishedAlert(value.alert),
-            )),
-            ffi::AlertType::AddTorrent => {
-                Alert::TorrentAlert(TorrentAlert::AddTorrent(AddTorrentAlert(value.alert)))
-            }
-            ffi::AlertType::Unknown => Alert::NotImplemented,
-            _ => Alert::NotImplemented,
+        macro_rules! type_match {
+            {
+                $(
+                    $name:ident : [$first:ident $(, $rest:ident)*]
+                ),* $(,)?
+            } => {
+                match value.type_ {
+                    $(
+                        ffi::AlertType::$name => {
+                            Alert::$first(
+                                type_match!(@wrap $name; $first $(, $rest)*)
+                            )
+                        }
+                    )*
+
+                    ffi::AlertType::Unknown => Alert::NotImplemented,
+                    _ => Alert::NotImplemented,
+                }
+            };
+
+            (@wrap $name:ident; $wrapper:ident, $next:ident $(, $rest:ident)*) => {
+                $wrapper::$next(
+                    type_match_helper!(@wrap $name; $next $(, $rest)*)
+                )
+            };
+
+            (@wrap $name:ident; $wrapper:ident) => {
+                $wrapper::$name(
+                    paste::paste! {
+                        [<$name Alert>](value.alert.cast())
+                    }
+                )
+            };
+        }
+
+        type_match! {
+            TorrentFinished: [TorrentAlert],
+            TorrentRemoved: [TorrentAlert],
+            ReadPiece: [TorrentAlert],
+            AddTorrent: [TorrentAlert],
+            StateChanged: [TorrentAlert],
+            SaveResumeData: [TorrentAlert],
+            SaveResumeDataFailed: [TorrentAlert],
         }
     }
 }
@@ -211,7 +245,6 @@ impl Alert {
     pub fn category(&self) -> AlertCategory {
         match self {
             Alert::TorrentAlert(alert) => match alert {
-                TorrentAlert::TorrentAdded(_) => AlertCategory::Status,
                 TorrentAlert::AddTorrent(_) => AlertCategory::Status,
                 TorrentAlert::TorrentFinished(_) => AlertCategory::Status,
                 TorrentAlert::TorrentRemoved(_) => AlertCategory::Status,

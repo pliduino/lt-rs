@@ -6,7 +6,7 @@ pub(crate) mod ffi {
     }
 
     enum AlertType {
-        TorrentAdded = 3,
+        // TorrentAdded = 3,
         TorrentRemoved = 4,
         ReadPiece = 5,
         FileCompleted = 6,
@@ -60,9 +60,9 @@ pub(crate) mod ffi {
         PeerBlocked = 54,
         DhtAnnounce = 55,
         DhtGetPeers = 56,
-        Stats = 57,
+        // Stats = 57,
         CacheFlushed = 58,
-        AnonymousMode = 59,
+        // AnonymousMode = 59,
         LsdPeer = 60,
         Trackerid = 61,
         DhtBootstrap = 62,
@@ -71,7 +71,7 @@ pub(crate) mod ffi {
         IncomingConnection = 66,
         AddTorrent = 67,
         StateUpdate = 68,
-        MmapCache = 69,
+        // MmapCache = 69,
         SessionStats = 70,
         DhtError = 73,
         DhtImmutableItem = 74,
@@ -115,7 +115,7 @@ pub(crate) mod ffi {
     }
 
     unsafe extern "C++" {
-        include!("src/lt.h");
+        include!("cpp/lt.h");
 
         fn lt_parse_magnet_uri(uri: &str) -> UniquePtr<add_torrent_params>;
 
@@ -178,5 +178,104 @@ pub(crate) mod ffi {
         // ╚===========================================================================╝
 
         type alert;
+        // type torrent_added_alert;
+        type torrent_removed_alert;
+        type read_piece_alert;
+        type file_completed_alert;
+        type file_renamed_alert;
+        type file_rename_failed_alert;
+        type performance_alert;
+        type state_changed_alert;
+        type tracker_error_alert;
+        type tracker_warning_alert;
+        type scrape_reply_alert;
+        type scrape_failed_alert;
+        type tracker_reply_alert;
+        type dht_reply_alert;
+        type tracker_announce_alert;
+        type hash_failed_alert;
+        type peer_ban_alert;
+        type peer_unsnubbed_alert;
+        type peer_snubbed_alert;
+        type peer_error_alert;
+        type peer_connect_alert;
+        type peer_disconnected_alert;
+        type invalid_request_alert;
+        type torrent_finished_alert;
+        type piece_finished_alert;
+        type request_dropped_alert;
+        type block_timeout_alert;
+        type block_finished_alert;
+        type block_downloading_alert;
+        type unwanted_block_alert;
+        type storage_moved_alert;
+        type storage_moved_failed_alert;
+        type torrent_deleted_alert;
+        type torrent_delete_failed_alert;
+        type save_resume_data_alert;
+        type save_resume_data_failed_alert;
+        type torrent_paused_alert;
+        type torrent_resumed_alert;
+        type torrent_checked_alert;
+        type url_seed_alert;
+        type file_error_alert;
+        type metadata_failed_alert;
+        type metadata_received_alert;
+        type udp_error_alert;
+        type external_ip_alert;
+        type listen_failed_alert;
+        type listen_succeeded_alert;
+        type portmap_error_alert;
+        type portmap_alert;
+        type portmap_log_alert;
+        type fastresume_rejected_alert;
+        type peer_blocked_alert;
+        type dht_announce_alert;
+        type dht_get_peers_alert;
+        // type stats_alert;
+        type cache_flushed_alert;
+        // type anonymous_mode_alert;
+        type lsd_peer_alert;
+        type trackerid_alert;
+        type dht_bootstrap_alert;
+        type torrent_error_alert;
+        type torrent_need_cert_alert;
+        type incoming_connection_alert;
+        type add_torrent_alert;
+        type state_update_alert;
+        // type mmap_cache_alert;
+        type session_stats_alert;
+        type dht_error_alert;
+        type dht_immutable_item_alert;
+        type dht_mutable_item_alert;
+        type dht_put_alert;
+        type i2p_alert;
+        type dht_outgoing_get_peers_alert;
+        type log_alert;
+        type torrent_log_alert;
+        type peer_log_alert;
+        type lsd_error_alert;
+        type dht_stats_alert;
+        type incoming_request_alert;
+        type dht_log_alert;
+        type dht_pkt_alert;
+        type dht_get_peers_reply_alert;
+        type dht_direct_response_alert;
+        type picker_log_alert;
+        type session_error_alert;
+        type dht_live_nodes_alert;
+        type session_stats_header_alert;
+        type dht_sample_infohashes_alert;
+        type block_uploaded_alert;
+        type alerts_dropped_alert;
+        type socks5_alert;
+        type file_prio_alert;
+        type oversized_file_alert;
+        type torrent_conflict_alert;
+        type peer_info_alert;
+        type file_progress_alert;
+        type piece_info_alert;
+        type piece_availability_alert;
+        type tracker_list_alert;
     }
 }
