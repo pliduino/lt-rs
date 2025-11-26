@@ -7,9 +7,6 @@
 #include <libtorrent/torrent_handle.hpp>
 #include <libtorrent/write_resume_data.hpp>
 
-#include <chrono>
-#include <iostream>
-#include <thread>
 #include <vector>
 
 namespace libtorrent {
