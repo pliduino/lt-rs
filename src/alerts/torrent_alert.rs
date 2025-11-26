@@ -1,6 +1,6 @@
 use crate::alerts::{
     AddTorrentAlert, ReadPieceAlert, SaveResumeDataAlert, StateChangedAlert, TorrentAddedAlert,
-    TorrentFinishedAlert, TorrentRemovedAlert, TrackerAlert,
+    TorrentFinishedAlert, TorrentRemovedAlert, tracker_alert::TrackerAlert,
 };
 
 pub enum TorrentAlert {

@@ -2,6 +2,7 @@ use crate::ffi::ffi::{self};
 
 mod torrent_alert;
 mod torrent_state;
+mod tracker_alert;
 
 pub use torrent_alert::TorrentAlert;
 pub use torrent_state::TorrentState;
@@ -228,8 +229,6 @@ impl Alert {
         }
     }
 }
-
-pub enum TrackerAlert {}
 
 bitflags::bitflags! {
     #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
