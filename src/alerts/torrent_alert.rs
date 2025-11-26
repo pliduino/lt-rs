@@ -1,19 +1,10 @@
-use crate::{
-    add_torrent_params::AddTorrentParams,
-    alerts::{ErrorCode, InfoHash, PeerId, PieceIndex, TcpEndpoint, TorrentState, UserData},
-    ffi::ffi,
-    torrent_handle::TorrentHandle,
+use crate::alerts::{
+    AddTorrentAlert, ReadPieceAlert, SaveResumeDataAlert, StateChangedAlert, TorrentAddedAlert,
+    TorrentFinishedAlert, TorrentRemovedAlert, TrackerAlert,
 };
 
-use cxx::UniquePtr;
-
-pub struct TorrentFinishedAlert(pub(super) *mut ffi::alert);
-pub struct AddTorrentAlert(pub(super) *mut ffi::alert);
-pub struct StateChangedAlert(pub(super) *mut ffi::alert);
-pub struct StateUpdateAlert(pub(super) *mut ffi::alert);
-pub struct SaveResumeDataAlert(pub(super) *mut ffi::alert);
-
 pub enum TorrentAlert {
+    TorrentAdded(TorrentAddedAlert),
     /// This alert is generated when a torrent switches from being a downloader to a seed.
     /// It will only be generated once per torrent.
     /// It contains a [`TorrentHandle`] to the torrent in question.
@@ -21,7 +12,6 @@ pub enum TorrentAlert {
     /// ## Alert Category
     /// [`AlertCategory::Status`]
     TorrentFinished(TorrentFinishedAlert),
-    /// # NOT IMPLEMENTED
     /// The [`TorrentAlert::TorrentRemoved`] is posted whenever a torrent is removed.
     /// Since the torrent handle in its base variant will usually be invalid (since the torrent is already removed)
     /// it has the info_hash as a member, to identify it.
@@ -41,8 +31,7 @@ pub enum TorrentAlert {
     ///
     /// The [`TorrentHandle`] acts as a weak_ptr, even though its object no longer exists,
     /// it can still compare equal to another weak pointer which points to the same non-existent object.
-    TorrentRemoved {},
-    /// # NOT IMPLEMENTED
+    TorrentRemoved(TorrentRemovedAlert),
     /// This alert is posted when the asynchronous read operation initiated by a call to [`TorrentHandle::read_piece()`] is completed.
     /// If the read failed, the torrent is paused and an error state is set and the buffer member of the alert is 0.
     /// If successful, buffer points to a buffer containing all the data of the piece. piece is the piece index that was read.
@@ -51,11 +40,7 @@ pub enum TorrentAlert {
     /// If the operation fails, error will indicate what went wrong.
     /// ## Alert Category
     /// [`AlertCategory::Storage`]
-    ReadPiece {
-        error: ErrorCode,
-        piece: PieceIndex,
-        size: i32,
-    },
+    ReadPiece(ReadPieceAlert),
     /// This alert is always posted when a torrent was attempted to be added and contains the return status of the add operation.
     /// The torrent handle of the new torrent can be found as the handle member in the base class.
     /// If adding the torrent failed, error contains the error code.
@@ -67,12 +52,7 @@ pub enum TorrentAlert {
     ///
     /// ## Alert Category
     /// [`AlertCategory::Status`]
-    StateChanged {
-        /// The new state of the torrent
-        state: TorrentState,
-        /// The previous state of the torrent
-        prev_state: TorrentState,
-    },
+    StateChanged(StateChangedAlert),
     /// This alert is generated as a response to a [`TorrentHandle::save_resume_data`] request.
     /// It is generated once the disk IO thread is done writing the state for this torrent.
     ///
@@ -82,25 +62,16 @@ pub enum TorrentAlert {
     /// * Saved to disk with write_resume_data()
     /// * Turned into a magnet link with make_magnet_uri()
     /// * Saved as a .torrent file with write_torrent_file()
-    SaveResumeData { params: AddTorrentParams },
+    SaveResumeData(SaveResumeDataAlert),
     /// This alert is generated instead of [`TorrentAlert::SaveResumeData`] if there was an error generating
     /// the resume data. error describes what went wrong.
-    SaveResumeDataFailed { error: ErrorCode },
-    /// # NOT IMPLEMENTED
+    SaveResumeDataFailed(SaveResumeDataAlert),
     /// The peer alert is a base variant for alerts that refer to a specific peer.
     /// It includes all the information to identify the peer. i.e. ip and peer-id.
-    PeerAlert {
-        /// The peer's IP address and port
-        endpoint: TcpEndpoint,
-        /// The peer ID, if known
-        pid: PeerId,
-    },
-    /// # NOT IMPLEMENTED
+    PeerAlert(PeerAlert),
     /// This is a base class used for alerts that are associated with a specific tracker.
     /// It is a variant of [`TorrentAlert`] since a tracker is also associated with a specific torrent.
-    TrackerAlert {
-        /// Endpoint of the listen interface being announced
-        local_endpoint: TcpEndpoint,
-        tracker_url: String,
-    },
+    TrackerAlert(TrackerAlert),
 }
+
+pub enum PeerAlert {}

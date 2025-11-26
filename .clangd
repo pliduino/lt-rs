@@ -1,7 +1,11 @@
 CompileFlags:
   Add: [
-    "-I./vendor/boost",
-    "-I./vendor/libtorrent/include",
-    "-I./target/cxxbridge",
+    "-Ivendor/boost",
+    "-Ivendor/libtorrent/include",
+    "-Itarget/cxxbridge",
+    "-I/nix/store/0sq0a7z7170nxiiizqpjflqn6aangiwf-libcxx-21.1.2-dev/include/c++/v1",
+    "-I./",
+    "-x",
+    "c++-header",
     "-std=c++14"
   ]

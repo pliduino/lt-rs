@@ -9,7 +9,6 @@
 #include <libtorrent/session.hpp>
 
 #include <boost/throw_exception.hpp>
-#include <exception>
 #include <memory>
 
 namespace libtorrent {
@@ -38,8 +37,10 @@ void lt_set_alert_mask(lt::settings_pack &pack, uint32_t mask);
 // ╚===========================================================================╝
 
 std::unique_ptr<lt::session> lt_create_session();
+
 std::unique_ptr<lt::session>
 lt_create_session_with_settings(const lt::settings_pack &settings);
+
 std::unique_ptr<lt::torrent_handle>
 lt_session_add_torrent(session &session, const lt::add_torrent_params &params);
 

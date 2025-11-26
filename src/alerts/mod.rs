@@ -1,17 +1,141 @@
-use crate::{
-    add_torrent_params::AddTorrentParams,
-    ffi::ffi::{self},
-    session::LtSession,
-    settings_pack::SettingsPack,
-    torrent_handle::TorrentHandle,
-    torrent_status::TorrentStatus,
-};
+use crate::ffi::ffi::{self};
 
 mod torrent_alert;
 mod torrent_state;
 
-pub use torrent_alert::{AddTorrentAlert, TorrentAlert, TorrentFinishedAlert};
+pub use torrent_alert::TorrentAlert;
 pub use torrent_state::TorrentState;
+
+macro_rules! define_alerts {
+[
+        $(
+            $variant:ident = $value:expr
+        ),* $(,)?
+] => {
+    paste::paste! {
+        $(
+            pub struct [<$variant Alert>](pub(super) *mut ffi::alert);
+        )*
+
+        // Sadly this macro does not work with CXX, so we have to manually
+        // copy and paste the types...
+        // macro_rules! define_alert_enum {
+            // () => {
+                // enum AlertType {
+                    // $(
+                        // $variant = $value,
+                    // )*
+
+                    // Unknown,
+                // }
+            // };
+        // }
+        //};
+    }
+}
+}
+
+define_alerts![
+    TorrentAdded = 3,
+    TorrentRemoved = 4,
+    ReadPiece = 5,
+    FileCompleted = 6,
+    FileRenamed = 7,
+    FileRenameFailed = 8,
+    Performance = 9,
+    StateChanged = 10,
+    TrackerError = 11,
+    TrackerWarning = 12,
+    ScrapeReply = 13,
+    ScrapeFailed = 14,
+    TrackerReply = 15,
+    DhtReply = 16,
+    TrackerAnnounce = 17,
+    HashFailed = 18,
+    PeerBan = 19,
+    PeerUnsnubbed = 20,
+    PeerSnubbed = 21,
+    PeerError = 22,
+    PeerConnnect = 23,
+    PeerDisconnected = 24,
+    InvalidRequest = 25,
+    TorrentFinished = 26,
+    PieceFinished = 27,
+    RequestDropped = 28,
+    BlockTimeout = 29,
+    BlockFinished = 30,
+    BlockDownloading = 31,
+    UnwantedBlock = 32,
+    StorageMoved = 33,
+    StorageMovedFailed = 34,
+    TorrentDeleted = 35,
+    TorrentDeleteFailed = 36,
+    SaveResumeData = 37,
+    SaveResumeDataFailed = 38,
+    TorrentPaused = 39,
+    TorrentResumed = 40,
+    TorrentChecked = 41,
+    UrlSeed = 42,
+    FileError = 43,
+    MetadataFailed = 44,
+    MetadataReceived = 45,
+    UdpError = 46,
+    ExternalIp = 47,
+    ListenFailed = 48,
+    ListenSucceeded = 49,
+    PortmapError = 50,
+    Portmap = 51,
+    PortmapLog = 52,
+    FastresumeRejected = 53,
+    PeerBlocked = 54,
+    DhtAnnounce = 55,
+    DhtGetPeers = 56,
+    Stats = 57,
+    CacheFlushed = 58,
+    AnonymousMode = 59,
+    LsdPeer = 60,
+    Trackerid = 61,
+    DhtBootstrap = 62,
+    TorrentError = 64,
+    TorrentNeedCert = 65,
+    IncomingConnection = 66,
+    AddTorrent = 67,
+    StateUpdate = 68,
+    MmapCache = 69,
+    SessionStats = 70,
+    DhtError = 73,
+    DhtImmutableItem = 74,
+    DhtMutableItem = 75,
+    DhtPut = 76,
+    I2p = 77,
+    DhtOutgoingGetPeers = 78,
+    Log = 79,
+    TorrentLog = 80,
+    PeerLog = 81,
+    LsdError = 82,
+    DhtStats = 83,
+    IncomingRequest = 84,
+    DhtLog = 85,
+    DhtPkt = 86,
+    DhtGetPeersReply = 87,
+    DhtDirectResponse = 88,
+    PickerLog = 89,
+    SessionError = 90,
+    DhtLiveNodes = 91,
+    SessionStatsHeader = 92,
+    DhtSampleInfohashes = 93,
+    BlockUploaded = 94,
+    AlertsDropped = 95,
+    Socks5 = 96,
+    FilePrio = 97,
+    OversizedFile = 98,
+    TorrentConflict = 99,
+    PeerInfo = 100,
+    FileProgress = 101,
+    PieceInfo = 102,
+    PieceAvailability = 103,
+    TrackerList = 104,
+];
 
 type TcpEndpoint = String;
 type PeerId = String;
@@ -62,17 +186,9 @@ pub enum Alert {
     /// This alert is only posted when requested by the user, by calling [`LtSession::post_torrent_updates()`] on the session.
     /// It contains the torrent status of all torrents that changed since last time this message was posted.
     /// Its category is [`AlertCategory::Status`], but it's not subject to filtering, since it's only manually posted anyway.
-    StateUpdate {
-        /// Contains the torrent status of all torrents that changed since last time this message was posted.
-        /// Note that you can map a torrent status to a specific torrent via its handle member.
-        ///
-        /// The receiving end is suggested to have all torrents sorted by the [`TorrentHandle`] or hashed by it,
-        /// for efficient updates.
-        status: Vec<TorrentStatus>,
-    },
-    // TorrentError,
-    // InvalidRequest,
-    // TrackerReply,
+    StateUpdate(StateUpdateAlert), // TorrentError,
+                                   // InvalidRequest,
+                                   // TrackerReply,
 }
 
 impl From<ffi::CastAlertRaw> for Alert {
@@ -94,19 +210,20 @@ impl Alert {
     pub fn category(&self) -> AlertCategory {
         match self {
             Alert::TorrentAlert(alert) => match alert {
-                TorrentAlert::AddTorrent { .. } => AlertCategory::Status,
+                TorrentAlert::TorrentAdded(_) => AlertCategory::Status,
+                TorrentAlert::AddTorrent(_) => AlertCategory::Status,
                 TorrentAlert::TorrentFinished(_) => AlertCategory::Status,
-                TorrentAlert::TorrentRemoved { .. } => AlertCategory::Status,
-                TorrentAlert::ReadPiece { .. } => AlertCategory::Storage,
-                TorrentAlert::StateChanged { .. } => AlertCategory::Status,
-                TorrentAlert::SaveResumeData { .. } => AlertCategory::Storage,
-                TorrentAlert::SaveResumeDataFailed { .. } => {
+                TorrentAlert::TorrentRemoved(_) => AlertCategory::Status,
+                TorrentAlert::ReadPiece(_) => AlertCategory::Storage,
+                TorrentAlert::StateChanged(_) => AlertCategory::Status,
+                TorrentAlert::SaveResumeData(_) => AlertCategory::Storage,
+                TorrentAlert::SaveResumeDataFailed(_) => {
                     AlertCategory::Storage | AlertCategory::Error
                 }
-                TorrentAlert::PeerAlert { .. } => todo!(),
-                TorrentAlert::TrackerAlert { .. } => todo!(),
+                TorrentAlert::PeerAlert(_) => todo!(),
+                TorrentAlert::TrackerAlert(_) => todo!(),
             },
-            Alert::StateUpdate { .. } => AlertCategory::Status,
+            Alert::StateUpdate(_) => AlertCategory::Status,
             Alert::NotImplemented => AlertCategory::empty(),
         }
     }
