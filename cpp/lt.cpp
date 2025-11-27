@@ -11,24 +11,24 @@
 
 namespace libtorrent {
 InfoHashCpp info_hash_t_to_info_hash_cpp(const lt::info_hash_t &hash) {
+    std::array<std::uint8_t, 32> copied_hash{};
   if (hash.has_v2()) {
-    std::array<std::uint8_t, 32> v2_hash{};
-    std::memcpy(v2_hash.data(), hash.v2.data(), v2_hash.size());
+    std::memcpy(copied_hash.data(), hash.v2.data(), copied_hash.size());
     return InfoHashCpp{
         2,
-        v2_hash,
+        copied_hash,
     };
   } else if (hash.has_v1()) {
-    std::array<std::uint8_t, 32> v1_hash{};
-    std::memcpy(v1_hash.data(), hash.v1.data(), 20);
+    std::memcpy(copied_hash.data(), hash.v1.data(), 20);
     return InfoHashCpp{
         1,
-        v1_hash,
+        copied_hash,
     };
   }
 
   return InfoHashCpp{
       1,
+      copied_hash
   };
 }
 
@@ -114,7 +114,7 @@ AlertType map_alert_type(int type) {
   case lt::peer_error_alert::alert_type:
     return AlertType::PeerError;
   case lt::peer_connect_alert::alert_type:
-    return AlertType::PeerConnnect;
+    return AlertType::PeerConnect;
   case lt::peer_disconnected_alert::alert_type:
     return AlertType::PeerDisconnected;
   case lt::invalid_request_alert::alert_type:

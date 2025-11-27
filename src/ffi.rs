@@ -26,7 +26,7 @@ pub(crate) mod ffi {
         PeerUnsnubbed = 20,
         PeerSnubbed = 21,
         PeerError = 22,
-        PeerConnnect = 23,
+        PeerConnect = 23,
         PeerDisconnected = 24,
         InvalidRequest = 25,
         TorrentFinished = 26,
