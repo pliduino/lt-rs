@@ -1,7 +1,4 @@
 #pragma once
-// #include "lt-rs/src/ffi/mod.rs.h"
-//
-// #include "lt-rs/src/ffi/mod.rs.h"
 #include "rust/cxx.h"
 
 #include <libtorrent/alert.hpp>
@@ -13,7 +10,7 @@
 #include <boost/throw_exception.hpp>
 #include <memory>
 
-namespace libtorrent {
+namespace ltrs {
 class InfoHashCpp;
 class CastAlertRaw;
 
@@ -22,7 +19,7 @@ lt_parse_magnet_uri(rust::Str magnet_uri);
 
 InfoHashCpp info_hash_t_to_info_hash_cpp(const lt::info_hash_t &hash);
 
-void lt_set_add_torrent_params_path(add_torrent_params &params, rust::Str path);
+void lt_set_add_torrent_params_path(lt::add_torrent_params &params, rust::Str path);
 
 InfoHashCpp
 lt_add_torrent_params_info_hash(const lt::add_torrent_params &params);
@@ -46,11 +43,11 @@ std::unique_ptr<lt::session>
 lt_create_session_with_settings(const lt::settings_pack &settings);
 
 std::unique_ptr<lt::torrent_handle>
-lt_session_add_torrent(session &session, const lt::add_torrent_params &params);
+lt_session_add_torrent(lt::session &session, const lt::add_torrent_params &params);
 
 rust::Vec<CastAlertRaw> lt_session_pop_alerts(lt::session &ses);
 
-void lt_session_async_add_torrent(session &session,
+void lt_session_async_add_torrent(lt::session &session,
                                   const lt::add_torrent_params &params);
 void lt_session_post_torrent_updates(lt::session &session, uint32_t flags);
 
@@ -62,7 +59,7 @@ bool lt_torrent_handle_in_session(const lt::torrent_handle &handle);
 
 void lt_torrent_handle_read_piece(const lt::torrent_handle &handle, int piece);
 
-std::unique_ptr<torrent_status>
+std::unique_ptr<lt::torrent_status>
 lt_torrent_handle_status(const lt::torrent_handle &handle);
 
 void lt_torrent_handle_save_resume_data(const lt::torrent_handle &handle,

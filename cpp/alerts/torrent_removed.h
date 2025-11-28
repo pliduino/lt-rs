@@ -4,8 +4,7 @@
 #include <libtorrent/alert_types.hpp>
 #include <libtorrent/alert.hpp>
 
-namespace libtorrent {
+namespace ltrs {
     class InfoHashCpp;
-    InfoHashCpp torrent_removed_alert_get_info_hashes(torrent_removed_alert* a);
-
+    InfoHashCpp torrent_removed_alert_get_info_hashes(lt::torrent_removed_alert* a);
 }

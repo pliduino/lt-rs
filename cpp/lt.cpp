@@ -7,7 +7,7 @@
 
 #include <vector>
 
-namespace libtorrent {
+namespace ltrs {
 InfoHashCpp info_hash_t_to_info_hash_cpp(const lt::info_hash_t &hash) {
     std::array<std::uint8_t, 32> copied_hash{};
   if (hash.has_v2()) {
@@ -300,7 +300,7 @@ rust::Vec<CastAlertRaw> lt_session_pop_alerts(lt::session &ses) {
 // ║                            Add Torrent Params                             ║
 // ╚===========================================================================╝
 
-void lt_set_add_torrent_params_path(add_torrent_params &params,
+void lt_set_add_torrent_params_path(lt::add_torrent_params &params,
                                     rust::Str path) {
   std::string path_str(path);
   params.save_path = path_str;
@@ -363,7 +363,7 @@ InfoHashCpp lt_torrent_handle_info_hash(const lt::torrent_handle &handle) {
   return info_hash_t_to_info_hash_cpp(hash);
 }
 
-std::unique_ptr<torrent_status>
+std::unique_ptr<lt::torrent_status>
 lt_torrent_handle_status(const lt::torrent_handle &handle) {
   return std::make_unique<lt::torrent_status>(handle.status());
 }

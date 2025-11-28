@@ -1,7 +1,7 @@
 use crate::{
     alerts::TorrentRemovedAlert,
-    ffi::alerts::torrent_removed_alert::ffi::torrent_removed_alert_get_info_hashes,
-    info_hash::InfoHash, torrent_handle::TorrentHandle,
+    ffi::alerts::torrent_removed::ffi::torrent_removed_alert_get_info_hashes, info_hash::InfoHash,
+    torrent_handle::TorrentHandle,
 };
 
 impl TorrentRemovedAlert {
@@ -17,7 +17,8 @@ impl TorrentRemovedAlert {
         self.as_torrent_alert().message()
     }
 
-    pub fn info_hashes(&self) -> InfoHash {
+    /// The info-hash of the torrent that was removed.
+    pub fn info_hash(&self) -> InfoHash {
         let hash = unsafe { torrent_removed_alert_get_info_hashes(self.0) };
         hash.into()
     }
