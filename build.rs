@@ -18,7 +18,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let libtorrent_build = out_dir.join("libtorrent-build");
 
     let boost_lib_dir = boost_build.join("lib");
-    let libtorrent_lib_dir = libtorrent_build.join("torrent/gcc-14/release/cxxstd-14-iso/deprecated-functions-off/link-static/threading-multi/visibility-hidden");
+    let libtorrent_lib_dir = libtorrent_build.join("torrent/gcc-14/release/cxxstd-20-iso/deprecated-functions-off/link-static/threading-multi/visibility-hidden");
 
     if !std::fs::exists(&boost_build)? {
         std::fs::create_dir_all(&boost_build).unwrap();
@@ -43,7 +43,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         b2.current_dir(&boost_dir).args([
             "link=static",
             "threading=multi",
-            "cxxflags=\"-std=c++14\"",
+            "cxxflags=\"-std=c++20\"",
             "runtime-link=static",
             "variant=release",
             "--with-system",
@@ -84,8 +84,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         b2.current_dir(&libtorrent_dir).args([
             "link=static",
             "threading=multi",
-            "cxxflags=\"-std=c++14\"",
-            "cxxstd=14",
+            "cxxflags=\"-std=c++20\"",
+            "cxxstd=20",
             "runtime-link=static",
             "variant=release",
             "boost-link=static",
@@ -127,7 +127,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .file(libtorrent_dir.join("deps/try_signal/signal_error_code.cpp"))
         .file(libtorrent_dir.join("deps/try_signal/try_signal.cpp"))
         .include(libtorrent_dir.join("deps/try_signal"))
-        .std("c++14")
+        .std("c++20")
         .include(&manifest_dir)
         .include(libtorrent_dir.join("include"))
         .include(boost_dir)
