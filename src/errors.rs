@@ -434,6 +434,103 @@ pub enum LibTorrentError {
     UnknownErrorCode,
 }
 
+pub enum HttpError {
+    Cont = 100,
+    Ok = 200,
+    Created = 201,
+    Accepted = 202,
+    NoContent = 204,
+    MultipleChoices = 300,
+    MovedPermanently = 301,
+    MovedTemporarily = 302,
+    NotModified = 304,
+    BadRequest = 400,
+    Unauthorized = 401,
+    Forbidden = 403,
+    NotFound = 404,
+    InternalServerError = 500,
+    NotImplemented = 501,
+    BadGateway = 502,
+    ServiceUnavailable = 503,
+}
+
+pub enum GzipError {
+    NoError = 0,
+    InvalidGzipHeader,
+    InflatedDataTooLarge,
+    DataDidNotTerminate,
+    SpaceExhausted,
+    InvalidBlockType,
+    InvalidStoredBlockLength,
+    TooManyLengthOrDistanceCodes,
+    CodeLengthsCodesIncomplete,
+    RepeatLengthsWithNoFirstLength,
+    RepeatMoreThanSpecifiedLengths,
+    InvalidLiteralLengthCodeLengths,
+    InvalidDistanceCodeLengths,
+    InvalidLiteralCodeInBlock,
+    DistanceTooFarBackInBlock,
+    UnknownGzipError,
+    ErrorCodeMax,
+}
+
+pub enum PcpError {
+    Success = 0,
+    UnsupportedVersion,
+    NotAuthorized,
+    MalformedRequest,
+    UnsupportedOpcode,
+    UnsupportedOption,
+    MalformedOption,
+    NetworkFailure,
+    NoResources,
+    UnsupportedProtocol,
+    UserExQuota,
+    CannotProvideExternal,
+    AddressMismatch,
+    ExcessiveRemotePeers,
+}
+
+pub enum BdecodeError {
+    NoError = 0,
+    ExpectedDigit,
+    ExpectedColon,
+    UnexpectedEof,
+    ExpectedValue,
+    DepthExceeded,
+    LimitExceeded,
+    Overflow,
+    ErrorCodeMax,
+}
+
+pub enum SocksError {
+    NoError = 0,
+    UnsupportedVersion,
+    UnsupportedAuthenticationMethod,
+    UnsupportedAuthenticationVersion,
+    AuthenticationError,
+    UsernameRequired,
+    GeneralFailure,
+    CommandNotSupported,
+    NoIdentd,
+    IdentdError,
+    NumErrors,
+}
+
+pub enum UpnpError {
+    NoError = 0,
+    InvalidArgument = 402,
+    ActionFailed = 501,
+    ValueNotInArray = 714,
+    SourceIpCannotBeWildcarded = 715,
+    ExternalPortCannotBeWildcarded = 716,
+    PortMappingConflict = 718,
+    InternalPortMustMatchExternal = 724,
+    OnlyPermanentLeasesSupported = 725,
+    RemoteHostMustBeWildcarded = 726,
+    ExternalPortMustBeWildcarded = 727,
+}
+
 #[allow(deprecated)]
 impl From<ErrorCodeRaw> for LibTorrentError {
     fn from(code: ErrorCodeRaw) -> Self {
