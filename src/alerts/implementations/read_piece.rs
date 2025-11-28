@@ -1,4 +1,9 @@
-use crate::{alerts::ReadPieceAlert, torrent_handle::TorrentHandle};
+use crate::{
+    alerts::ReadPieceAlert,
+    errors::LibTorrentError,
+    ffi::alerts::read_piece::ffi::{read_piece_alert_get_error, read_piece_alert_get_size},
+    torrent_handle::TorrentHandle,
+};
 
 impl ReadPieceAlert {
     pub fn handle<'a>(&'a self) -> TorrentHandle<'a> {
@@ -22,10 +27,10 @@ impl ReadPieceAlert {
     }
 
     pub fn size(&self) -> i32 {
-        unimplemented!()
+        unsafe { read_piece_alert_get_size(self.0) }
     }
 
-    pub fn error(&self) -> i32 {
-        unimplemented!()
+    pub fn error(&self) -> LibTorrentError {
+        unsafe { read_piece_alert_get_error(self.0) }.into()
     }
 }
