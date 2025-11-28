@@ -1,14 +1,43 @@
-use crate::alerts::{
-    AddTorrentAlert, AlertCategory, CacheFlushedAlert, FastresumeRejectedAlert, FileCompletedAlert,
-    FileErrorAlert, FilePrioAlert, FileProgressAlert, FileRenameFailedAlert, FileRenamedAlert,
-    HashFailedAlert, MetadataFailedAlert, MetadataReceivedAlert, OversizedFileAlert, PeerInfoAlert,
-    PerformanceAlert, PieceAvailabilityAlert, PieceFinishedAlert, PieceInfoAlert, ReadPieceAlert,
-    SaveResumeDataAlert, SaveResumeDataFailedAlert, StateChangedAlert, StorageMovedAlert,
-    StorageMovedFailedAlert, TorrentCheckedAlert, TorrentConflictAlert, TorrentDeleteFailedAlert,
-    TorrentDeletedAlert, TorrentErrorAlert, TorrentFinishedAlert, TorrentLogAlert,
-    TorrentNeedCertAlert, TorrentPausedAlert, TorrentRemovedAlert, TorrentResumedAlert,
-    TrackerListAlert, UrlSeedAlert, peer_alert::PeerAlert, tracker_alert::TrackerAlert,
+use std::marker::PhantomData;
+
+use crate::{
+    alerts::{
+        AddTorrentAlert, CacheFlushedAlert, FastresumeRejectedAlert, FileCompletedAlert,
+        FileErrorAlert, FilePrioAlert, FileProgressAlert, FileRenameFailedAlert, FileRenamedAlert,
+        HashFailedAlert, MetadataFailedAlert, MetadataReceivedAlert, OversizedFileAlert,
+        PeerInfoAlert, PerformanceAlert, PieceAvailabilityAlert, PieceFinishedAlert,
+        PieceInfoAlert, ReadPieceAlert, SaveResumeDataAlert, SaveResumeDataFailedAlert,
+        StateChangedAlert, StorageMovedAlert, StorageMovedFailedAlert, TorrentCheckedAlert,
+        TorrentConflictAlert, TorrentDeleteFailedAlert, TorrentDeletedAlert, TorrentErrorAlert,
+        TorrentFinishedAlert, TorrentLogAlert, TorrentNeedCertAlert, TorrentPausedAlert,
+        TorrentRemovedAlert, TorrentResumedAlert, TrackerListAlert, UrlSeedAlert,
+        peer_alert::PeerAlert, tracker_alert::TrackerAlert,
+    },
+    ffi::{
+        alerts::torrent_alert::ffi::{
+            lt_torrent_alert_handle, lt_torrent_alert_message, lt_torrent_alert_torrent_name,
+        },
+        ffi::torrent_alert,
+    },
+    torrent_handle::TorrentHandle,
 };
+
+pub(crate) struct TorrentAlertRaw<'a>(*mut torrent_alert, PhantomData<&'a ()>);
+
+impl<'a> TorrentAlertRaw<'a> {
+    pub(crate) fn new(alert: *mut torrent_alert) -> TorrentAlertRaw<'a> {
+        TorrentAlertRaw(alert, PhantomData)
+    }
+    pub(crate) fn message(&self) -> String {
+        unsafe { lt_torrent_alert_message(self.0) }
+    }
+    pub(crate) fn torrent_name(&self) -> &'a str {
+        unsafe { lt_torrent_alert_torrent_name::<'a>(self.0) }
+    }
+    pub(crate) fn handle(&self) -> TorrentHandle<'a> {
+        TorrentHandle::from_inner(unsafe { lt_torrent_alert_handle(self.0) })
+    }
+}
 
 pub enum TorrentAlert {
     /// The [`TorrentAlert::TorrentRemoved`] is posted whenever a torrent is removed. Since

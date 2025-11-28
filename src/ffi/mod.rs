@@ -1,6 +1,11 @@
+pub mod alerts {
+    pub mod torrent_alert;
+    pub mod torrent_removed_alert;
+}
+
 #[cxx::bridge(namespace = "libtorrent")]
 pub(crate) mod ffi {
-    struct InfoHashCpp {
+    pub struct InfoHashCpp {
         version: u8, // 1 for v1, 2 for v2
         inner: [u8; 32],
     }
@@ -178,7 +183,11 @@ pub(crate) mod ffi {
         // ╚===========================================================================╝
 
         type alert;
-        // type torrent_added_alert;
+
+        type torrent_alert;
+        type tracker_alert;
+        type peer_alert;
+
         type torrent_removed_alert;
         type read_piece_alert;
         type file_completed_alert;

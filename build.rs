@@ -91,6 +91,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             "boost-link=static",
             "define=BOOST_ASIO_NO_DEPRECATED",
             "define=BOOST_ASIO_HEADER_ONLY",
+            "define=TORRENT_NO_DEPRECATE",
             "deprecated-functions=off",
             &format!("--build-dir={}", libtorrent_build.display()),
             &format!("--stagedir={}", libtorrent_build.display()),
@@ -107,7 +108,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
     println!("cargo:rustc-link-lib=static=torrent-rasterbar");
 
-    let mut cxx = cxx_build::bridge("src/ffi.rs");
+    let rust_srcs = find_files(Path::new("src/ffi"), "rs");
+
+    let mut cxx = cxx_build::bridges(rust_srcs);
 
     if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("windows") {
         cxx.define("_WIN32_WINNT", Some("0x0A00"));
@@ -138,7 +141,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     for src_file in &cxx_src_files {
         println!("cargo:rerun-if-changed={}", src_file.display());
     }
-    println!("cargo:rerun-if-changed=src/ffi.rs");
+    println!("cargo:rerun-if-changed=src/ffi/mod.rs");
 
     Ok(())
 }

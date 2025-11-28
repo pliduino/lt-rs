@@ -1,20 +1,27 @@
-use cxx::UniquePtr;
-
 use crate::alerts::PieceIndex;
 use crate::ffi::ffi;
 use crate::info_hash::InfoHash;
 use crate::torrent_status::TorrentStatus;
 
-pub struct TorrentHandle {
-    inner: UniquePtr<ffi::torrent_handle>,
+pub struct TorrentHandle<'a> {
+    inner: *mut ffi::torrent_handle,
+    _marker: std::marker::PhantomData<&'a ()>,
 }
 
-impl TorrentHandle {
+impl<'a> TorrentHandle<'a> {
+    pub(crate) fn from_inner(inner: *mut ffi::torrent_handle) -> TorrentHandle<'a> {
+        TorrentHandle {
+            inner: inner,
+            _marker: std::marker::PhantomData,
+        }
+    }
+
     /// Returns true if the torrent is in the session. It returns true before session::remove_torrent() is called, and false afterward.
     /// ### Note
     /// This is a blocking function, unlike [`TorrentHandle::is_valid()`] which returns immediately.
     pub fn in_session(&self) -> bool {
-        ffi::lt_torrent_handle_in_session(&self.inner)
+        // ffi::lt_torrent_handle_in_session(self.inner)
+        unimplemented!()
     }
 
     /// [`TorrentHandle::save_resume_data()`] asks libtorrent to generate fast-resume data for
@@ -114,7 +121,8 @@ impl TorrentHandle {
     ///	report that they don't need to save resume data again, and skipped by
     ///	the initial loop, and thwart the counter otherwise.
     pub fn save_resume_data(&self, flags: ResumeDataFlags) {
-        ffi::lt_torrent_handle_save_resume_data(&self.inner, flags.bits());
+        // ffi::lt_torrent_handle_save_resume_data(&self.inner, flags.bits());
+        unimplemented!()
     }
 
     /// This function starts an asynchronous read operation of the specified piece from this torrent.
@@ -126,32 +134,26 @@ impl TorrentHandle {
     /// Note that if you read multiple pieces, the read operations are not guaranteed to finish in the same order as you initiated them.
     fn read_piece(&self, piece: PieceIndex) {
         unimplemented!();
-        ffi::lt_torrent_handle_read_piece(&self.inner, piece);
+        //ffi::lt_torrent_handle_read_piece(&self.inner, piece);
     }
 
     pub fn status(&self) -> TorrentStatus {
-        ffi::lt_torrent_handle_status(&self.inner).into()
+        unimplemented!()
+        //ffi::lt_torrent_handle_status(&self.inner).into()
     }
 
     pub fn info_hash(&self) -> InfoHash {
-        ffi::lt_torrent_handle_info_hash(&self.inner).into()
+        unimplemented!()
+        //ffi::lt_torrent_handle_info_hash(&self.inner).into()
     }
 }
 
 // TODO: Check if this is safe
-unsafe impl Send for TorrentHandle {}
+unsafe impl<'a> Send for TorrentHandle<'a> {}
 
-impl std::fmt::Debug for TorrentHandle {
+impl<'a> std::fmt::Debug for TorrentHandle<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("TorrentHandle")
-            .field("inner", &self.inner.as_ptr())
-            .finish()
-    }
-}
-
-impl From<UniquePtr<ffi::torrent_handle>> for TorrentHandle {
-    fn from(inner: UniquePtr<ffi::torrent_handle>) -> TorrentHandle {
-        TorrentHandle { inner }
+        f.debug_struct("TorrentHandle").finish()
     }
 }
 

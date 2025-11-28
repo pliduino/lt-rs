@@ -1,8 +1,10 @@
 #pragma once
-#define BOOST_ASIO_SEPARATE_COMPILATION 1
-#define TORRENT_NO_DEPRECATE 1
+// #include "lt-rs/src/ffi/mod.rs.h"
+//
+// #include "lt-rs/src/ffi/mod.rs.h"
 #include "rust/cxx.h"
 
+#include <libtorrent/alert.hpp>
 #include <libtorrent/add_torrent_params.hpp>
 #include <libtorrent/alert_types.hpp>
 #include <libtorrent/magnet_uri.hpp>
@@ -12,11 +14,13 @@
 #include <memory>
 
 namespace libtorrent {
-struct InfoHashCpp;
-struct CastAlertRaw;
+class InfoHashCpp;
+class CastAlertRaw;
 
 std::unique_ptr<lt::add_torrent_params>
 lt_parse_magnet_uri(rust::Str magnet_uri);
+
+InfoHashCpp info_hash_t_to_info_hash_cpp(const lt::info_hash_t &hash);
 
 void lt_set_add_torrent_params_path(add_torrent_params &params, rust::Str path);
 

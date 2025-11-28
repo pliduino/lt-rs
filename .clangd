@@ -7,5 +7,8 @@ CompileFlags:
     "-I./",
     "-x",
     "c++-header",
-    "-std=c++14"
+    "-std=c++14",
+    "-DBOOST_ASIO_NO_DEPRECATED",
+    "-DBOOST_ASIO_HEADER_ONLY",
+    "-DTORRENT_NO_DEPRECATE"
   ]

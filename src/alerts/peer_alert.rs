@@ -1,9 +1,22 @@
-use crate::alerts::{
-    BlockDownloadingAlert, BlockFinishedAlert, BlockTimeoutAlert, BlockUploadedAlert,
-    IncomingRequestAlert, InvalidRequestAlert, LsdPeerAlert, PeerBanAlert, PeerBlockedAlert,
-    PeerConnectAlert, PeerDisconnectedAlert, PeerErrorAlert, PeerLogAlert, PeerSnubbedAlert,
-    PeerUnsnubbedAlert, PickerLogAlert, RequestDroppedAlert, UnwantedBlockAlert,
+use std::marker::PhantomData;
+
+use crate::{
+    alerts::{
+        BlockDownloadingAlert, BlockFinishedAlert, BlockTimeoutAlert, BlockUploadedAlert,
+        IncomingRequestAlert, InvalidRequestAlert, LsdPeerAlert, PeerBanAlert, PeerBlockedAlert,
+        PeerConnectAlert, PeerDisconnectedAlert, PeerErrorAlert, PeerLogAlert, PeerSnubbedAlert,
+        PeerUnsnubbedAlert, PickerLogAlert, RequestDroppedAlert, UnwantedBlockAlert,
+    },
+    ffi::ffi,
 };
+
+pub(super) struct PeerAlertRaw<'a>(*mut ffi::peer_alert, PhantomData<&'a ()>);
+
+impl<'a> PeerAlertRaw<'a> {
+    pub(crate) fn new(alert: *mut ffi::peer_alert) -> PeerAlertRaw<'a> {
+        PeerAlertRaw(alert, PhantomData)
+    }
+}
 
 pub enum PeerAlert {
     /// This alert is generated when a peer is banned because it has sent too many corrupt pieces

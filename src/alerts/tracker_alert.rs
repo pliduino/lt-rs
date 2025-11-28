@@ -1,7 +1,20 @@
-use crate::alerts::{
-    DhtReplyAlert, HashFailedAlert, ScrapeFailedAlert, ScrapeReplyAlert, TrackerAnnounceAlert,
-    TrackerErrorAlert, TrackerReplyAlert, TrackerWarningAlert, TrackeridAlert,
+use std::marker::PhantomData;
+
+use crate::{
+    alerts::{
+        DhtReplyAlert, ScrapeFailedAlert, ScrapeReplyAlert, TrackerAnnounceAlert,
+        TrackerErrorAlert, TrackerReplyAlert, TrackerWarningAlert, TrackeridAlert,
+    },
+    ffi::ffi,
 };
+
+pub struct TrackerAlertRaw<'a>(*mut ffi::tracker_alert, PhantomData<&'a ()>);
+
+impl<'a> TrackerAlertRaw<'a> {
+    pub(crate) fn new(alert: *mut ffi::tracker_alert) -> TrackerAlertRaw<'a> {
+        TrackerAlertRaw(alert, PhantomData)
+    }
+}
 
 pub enum TrackerAlert {
     /// This alert is generated on tracker time outs, premature disconnects,

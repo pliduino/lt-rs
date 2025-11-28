@@ -3,6 +3,7 @@ use crate::{
     ffi::ffi::{self},
 };
 
+mod implementations;
 mod peer_alert;
 mod torrent_alert;
 mod torrent_state;
@@ -11,20 +12,21 @@ mod tracker_alert;
 pub use torrent_alert::TorrentAlert;
 pub use torrent_state::TorrentState;
 
+use peer_alert::PeerAlertRaw;
+use torrent_alert::TorrentAlertRaw;
+use tracker_alert::TrackerAlertRaw;
+
 macro_rules! define_alerts {
 [
-        $(
-            $variant:ident = $value:expr
-        ),* $(,)?
+    $(
+        $variant:ident = $value:expr
+    ),* $(,)?
 ] => {
     paste::paste! {
         $(
-            pub struct [<$variant Alert>](pub(super) *mut ffi::[<$variant:snake _alert>]);
+            pub struct [<$variant Alert>] (pub(super) *mut ffi::[<$variant:snake _alert>]);
             impl [<$variant Alert>] {
-                // #[cfg(doctest)]
-                pub unsafe fn null() -> Self {
-                    [<$variant Alert>](std::ptr::null_mut())
-                }
+
             }
         )*
 
@@ -150,7 +152,6 @@ define_alerts![
 
 type TcpEndpoint = String;
 type PeerId = String;
-type InfoHash = String;
 type UserData = String;
 
 pub type ErrorCode = i32;
@@ -188,6 +189,8 @@ struct DhtRoutingBucket {
 /// Alerts returned by [`LtSession::pop_alerts()`] are only valid until the next call to [`LtSession::pop_alerts()`].
 /// You may not copy an alert object to access it after the next call to [`LtSession::pop_alerts()`].
 /// Internal members of alerts also become invalid once [`LtSession::pop_alerts()`] is called again.
+// ! Alerts should only exist inside sessions so lifetimes are
+// ! easier to manage
 pub enum Alert {
     NotImplemented,
     /// This alert is posted when there is an error on a UDP socket. The
@@ -498,153 +501,165 @@ pub enum Alert {
     TorrentAlert(TorrentAlert),
 }
 
-impl From<ffi::CastAlertRaw> for Alert {
-    fn from(value: ffi::CastAlertRaw) -> Self {
-        macro_rules! type_match_int {
-            {
-                $(
-                    $name:ident : [$first:ident $(, $rest:ident)*]
-                ),* $(,)?
-            } => {
-                match value.type_ {
-                    $(
-                        ffi::AlertType::$name => {
-                                type_match_int!(@wrap $name; $first $(, $rest)*)
-                        }
-                    )*
-
-                    ffi::AlertType::Unknown => Alert::NotImplemented,
-                    _ => Alert::NotImplemented,
+macro_rules! type_match_int {
+    {
+        $value:ident,
+        $(
+            $name:ident : [$first:ident $(, $rest:ident)*]
+        ),* $(,)?
+    } => {
+        match $value.type_ {
+            $(
+                ffi::AlertType::$name => {
+                    type_match_int!(@wrap $name, $value; $first $(, $rest)*)
                 }
-            };
-
-            (@wrap $name:ident; $wrapper:ident, $next:ident $(, $rest:ident)*) => {
-                $wrapper::$next(
-                    type_match_int!(@wrap $name; $next $(, $rest)*)
-                )
-            };
-
-            (@wrap $name:ident; $wrapper:ident) => {
-                $wrapper::$name(
-                    paste::paste! {
-                        [<$name Alert>](value.alert.cast())
-                    }
-                )
-            };
+            )*
+            ffi::AlertType::Unknown => Alert::NotImplemented,
+            _ => Alert::NotImplemented,
         }
+    };
 
-        macro_rules! type_match {
-            {
-                $(
-                    $name:ident : [ $( $rest:ident ),* ]
-                ),* $(,)?
-            } => {
+    (@wrap $name:ident, $value:ident; $wrapper:ident, $next:ident $(, $rest:ident)*) => {
+        $wrapper::$next(
+            type_match_int!(@wrap $name, $value; $next $(, $rest)*)
+        )
+    };
+
+    (@wrap $name:ident, $value:ident; $wrapper:ident) => {
+        $wrapper::$name(
+            paste::paste! {
+                [<$name Alert>]($value.alert.cast())
+            }
+        )
+    };
+}
+
+macro_rules! type_match {
+    {
+        $(
+            $name:ident : [ $( $rest:ident ),* ]
+        ),* $(,)?
+    } => {
+        impl From<ffi::CastAlertRaw> for Alert {
+            fn from(value: ffi::CastAlertRaw) -> Self {
                 type_match_int! {
+                    value,
                     $(
                         $name: [Alert $(, $rest)*],
                     )*
                 }
             }
         }
-
-        type_match! {
-            TorrentRemoved: [TorrentAlert],
-            ReadPiece: [TorrentAlert],
-            FileCompleted: [TorrentAlert],
-            FileRenamed: [TorrentAlert],
-            FileRenameFailed: [TorrentAlert],
-            Performance: [TorrentAlert],
-            StateChanged: [TorrentAlert],
-            TrackerError: [TorrentAlert, TrackerAlert],
-            TrackerWarning: [TorrentAlert, TrackerAlert],
-            ScrapeReply: [TorrentAlert, TrackerAlert],
-            ScrapeFailed: [TorrentAlert, TrackerAlert],
-            TrackerReply: [TorrentAlert, TrackerAlert],
-            DhtReply: [TorrentAlert, TrackerAlert],
-            TrackerAnnounce: [TorrentAlert, TrackerAlert],
-            HashFailed: [TorrentAlert],
-            PeerBan: [TorrentAlert, PeerAlert],
-            PeerUnsnubbed: [TorrentAlert, PeerAlert],
-            PeerSnubbed: [TorrentAlert, PeerAlert],
-            PeerError: [TorrentAlert, PeerAlert],
-            PeerConnect: [TorrentAlert, PeerAlert],
-            PeerDisconnected: [TorrentAlert, PeerAlert],
-            InvalidRequest: [TorrentAlert, PeerAlert],
-            TorrentFinished: [TorrentAlert],
-            PieceFinished: [TorrentAlert],
-            RequestDropped: [TorrentAlert, PeerAlert],
-            BlockTimeout: [TorrentAlert, PeerAlert],
-            BlockFinished: [TorrentAlert, PeerAlert],
-            BlockDownloading: [TorrentAlert, PeerAlert],
-            UnwantedBlock: [TorrentAlert, PeerAlert],
-            StorageMoved: [TorrentAlert],
-            StorageMovedFailed: [TorrentAlert],
-            TorrentDeleted: [TorrentAlert],
-            TorrentDeleteFailed: [TorrentAlert],
-            SaveResumeData: [TorrentAlert],
-            SaveResumeDataFailed: [TorrentAlert],
-            TorrentPaused: [TorrentAlert],
-            TorrentResumed: [TorrentAlert],
-            TorrentChecked: [TorrentAlert],
-            UrlSeed: [TorrentAlert],
-            FileError: [TorrentAlert],
-            MetadataFailed: [TorrentAlert],
-            MetadataReceived: [TorrentAlert],
-            UdpError: [],
-            ExternalIp: [],
-            ListenFailed: [],
-            ListenSucceeded: [],
-            PortmapError: [],
-            Portmap: [],
-            PortmapLog: [],
-            FastresumeRejected: [TorrentAlert],
-            PeerBlocked: [TorrentAlert, PeerAlert],
-            DhtAnnounce: [],
-            DhtGetPeers: [],
-            CacheFlushed: [TorrentAlert],
-            LsdPeer: [TorrentAlert, PeerAlert],
-            Trackerid: [TorrentAlert, TrackerAlert],
-            DhtBootstrap: [],
-            TorrentError: [TorrentAlert],
-            TorrentNeedCert: [TorrentAlert],
-            IncomingConnection: [],
-            AddTorrent: [TorrentAlert],
-            StateUpdate: [],
-            SessionStats: [],
-            DhtError: [],
-            DhtImmutableItem: [],
-            DhtMutableItem: [],
-            DhtPut: [],
-            I2p: [],
-            DhtOutgoingGetPeers: [],
-            Log: [],
-            TorrentLog: [TorrentAlert],
-            PeerLog: [TorrentAlert, PeerAlert],
-            LsdError: [],
-            DhtStats: [],
-            IncomingRequest: [TorrentAlert, PeerAlert],
-            DhtLog: [],
-            DhtPkt: [],
-            DhtGetPeersReply: [],
-            DhtDirectResponse: [],
-            PickerLog: [TorrentAlert, PeerAlert],
-            SessionError: [],
-            DhtLiveNodes: [],
-            SessionStatsHeader: [],
-            DhtSampleInfohashes: [],
-            BlockUploaded: [TorrentAlert, PeerAlert],
-            AlertsDropped: [],
-            Socks5: [],
-            FilePrio: [TorrentAlert],
-            OversizedFile: [TorrentAlert],
-            TorrentConflict: [TorrentAlert],
-            PeerInfo: [TorrentAlert],
-            FileProgress: [TorrentAlert],
-            PieceInfo: [TorrentAlert],
-            PieceAvailability: [TorrentAlert],
-            TrackerList: [TorrentAlert],
+        paste::paste! {
+            $(
+                impl [<$name Alert>] {
+                    $(
+                        fn [<as_ $rest:snake>]<'a>(&'a self) -> [<$rest Raw>]<'a> {
+                            [<$rest Raw>]::new(self.0.cast())
+                        }
+                    )*
+                }
+            )*
         }
-    }
+    };
+}
+
+type_match! {
+    TorrentRemoved: [TorrentAlert],
+    ReadPiece: [TorrentAlert],
+    FileCompleted: [TorrentAlert],
+    FileRenamed: [TorrentAlert],
+    FileRenameFailed: [TorrentAlert],
+    Performance: [TorrentAlert],
+    StateChanged: [TorrentAlert],
+    TrackerError: [TorrentAlert, TrackerAlert],
+    TrackerWarning: [TorrentAlert, TrackerAlert],
+    ScrapeReply: [TorrentAlert, TrackerAlert],
+    ScrapeFailed: [TorrentAlert, TrackerAlert],
+    TrackerReply: [TorrentAlert, TrackerAlert],
+    DhtReply: [TorrentAlert, TrackerAlert],
+    TrackerAnnounce: [TorrentAlert, TrackerAlert],
+    HashFailed: [TorrentAlert],
+    PeerBan: [TorrentAlert, PeerAlert],
+    PeerUnsnubbed: [TorrentAlert, PeerAlert],
+    PeerSnubbed: [TorrentAlert, PeerAlert],
+    PeerError: [TorrentAlert, PeerAlert],
+    PeerConnect: [TorrentAlert, PeerAlert],
+    PeerDisconnected: [TorrentAlert, PeerAlert],
+    InvalidRequest: [TorrentAlert, PeerAlert],
+    TorrentFinished: [TorrentAlert],
+    PieceFinished: [TorrentAlert],
+    RequestDropped: [TorrentAlert, PeerAlert],
+    BlockTimeout: [TorrentAlert, PeerAlert],
+    BlockFinished: [TorrentAlert, PeerAlert],
+    BlockDownloading: [TorrentAlert, PeerAlert],
+    UnwantedBlock: [TorrentAlert, PeerAlert],
+    StorageMoved: [TorrentAlert],
+    StorageMovedFailed: [TorrentAlert],
+    TorrentDeleted: [TorrentAlert],
+    TorrentDeleteFailed: [TorrentAlert],
+    SaveResumeData: [TorrentAlert],
+    SaveResumeDataFailed: [TorrentAlert],
+    TorrentPaused: [TorrentAlert],
+    TorrentResumed: [TorrentAlert],
+    TorrentChecked: [TorrentAlert],
+    UrlSeed: [TorrentAlert],
+    FileError: [TorrentAlert],
+    MetadataFailed: [TorrentAlert],
+    MetadataReceived: [TorrentAlert],
+    UdpError: [],
+    ExternalIp: [],
+    ListenFailed: [],
+    ListenSucceeded: [],
+    PortmapError: [],
+    Portmap: [],
+    PortmapLog: [],
+    FastresumeRejected: [TorrentAlert],
+    PeerBlocked: [TorrentAlert, PeerAlert],
+    DhtAnnounce: [],
+    DhtGetPeers: [],
+    CacheFlushed: [TorrentAlert],
+    LsdPeer: [TorrentAlert, PeerAlert],
+    Trackerid: [TorrentAlert, TrackerAlert],
+    DhtBootstrap: [],
+    TorrentError: [TorrentAlert],
+    TorrentNeedCert: [TorrentAlert],
+    IncomingConnection: [],
+    AddTorrent: [TorrentAlert],
+    StateUpdate: [],
+    SessionStats: [],
+    DhtError: [],
+    DhtImmutableItem: [],
+    DhtMutableItem: [],
+    DhtPut: [],
+    I2p: [],
+    DhtOutgoingGetPeers: [],
+    Log: [],
+    TorrentLog: [TorrentAlert],
+    PeerLog: [TorrentAlert, PeerAlert],
+    LsdError: [],
+    DhtStats: [],
+    IncomingRequest: [TorrentAlert, PeerAlert],
+    DhtLog: [],
+    DhtPkt: [],
+    DhtGetPeersReply: [],
+    DhtDirectResponse: [],
+    PickerLog: [TorrentAlert, PeerAlert],
+    SessionError: [],
+    DhtLiveNodes: [],
+    SessionStatsHeader: [],
+    DhtSampleInfohashes: [],
+    BlockUploaded: [TorrentAlert, PeerAlert],
+    AlertsDropped: [],
+    Socks5: [],
+    FilePrio: [TorrentAlert],
+    OversizedFile: [TorrentAlert],
+    TorrentConflict: [TorrentAlert],
+    PeerInfo: [TorrentAlert],
+    FileProgress: [TorrentAlert],
+    PieceInfo: [TorrentAlert],
+    PieceAvailability: [TorrentAlert],
+    TrackerList: [TorrentAlert],
 }
 
 impl Alert {

@@ -31,7 +31,8 @@ impl LtSession {
     }
 
     pub fn add_torrent(&mut self, params: &AddTorrentParams) -> TorrentHandle {
-        ffi::lt_session_add_torrent(self.inner.pin_mut(), params.inner()).into()
+        unimplemented!()
+        // ffi::lt_session_add_torrent(self.inner.pin_mut(), params.inner()).into()
     }
 
     pub fn async_add_torrent(&mut self, params: &AddTorrentParams) {

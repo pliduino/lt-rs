@@ -1,8 +1,6 @@
 #include "./lt.h"
 
-#include "lt-rs/src/ffi.rs.h"
-
-#include <libtorrent/alert_types.hpp>
+#include "lt-rs/src/ffi/mod.rs.h"
 #include <libtorrent/read_resume_data.hpp>
 #include <libtorrent/torrent_handle.hpp>
 #include <libtorrent/write_resume_data.hpp>
