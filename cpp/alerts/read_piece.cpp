@@ -1,185 +1,75 @@
 #include "./read_piece.h"
 
 #include "lt-rs/src/ffi/alerts/read_piece.rs.h"
-#include "libtorrent/error_code.hpp"
+
+#include <libtorrent/gzip.hpp>
+#include <libtorrent/error_code.hpp>
+#include <libtorrent/i2p_stream.hpp>
+#include <libtorrent/socks5_stream.hpp>
+#include <libtorrent/upnp.hpp>
+#include <libtorrent/natpmp.hpp>
 
 namespace ltrs {
     int read_piece_alert_get_size(lt::read_piece_alert* a) {
         return a->size;
     }
 
-    ErrorCodeRaw error_code_enum_to_error_code_raw (const lt::error_code e) {
-        switch (e.value()) {
-            case lt::errors::no_error:
-                return ErrorCodeRaw::no_error;
-            case lt::errors::file_collision:
-                return ErrorCodeRaw::file_collision;
-            case lt::errors::failed_hash_check:
-                return ErrorCodeRaw::failed_hash_check;
-            case lt::errors::torrent_is_no_dict:
-                return ErrorCodeRaw::torrent_is_no_dict;
-            case lt::errors::torrent_missing_info:
-                return ErrorCodeRaw::torrent_missing_info;
-            case lt::errors::torrent_info_no_dict:
-                return ErrorCodeRaw::torrent_info_no_dict;
-            case lt::errors::torrent_missing_piece_length:
-                return ErrorCodeRaw::torrent_missing_piece_length;
-            case lt::errors::torrent_missing_name:
-                return ErrorCodeRaw::torrent_missing_name;
-            case lt::errors::torrent_invalid_name:
-                return ErrorCodeRaw::torrent_invalid_name;
-            case lt::errors::torrent_invalid_length:
-                return ErrorCodeRaw::torrent_invalid_length;
-            case lt::errors::torrent_file_parse_failed:
-                return ErrorCodeRaw::torrent_file_parse_failed;
-            case lt::errors::torrent_missing_pieces:
-                return ErrorCodeRaw::torrent_missing_pieces;
-            case lt::errors::torrent_invalid_hashes:
-                return ErrorCodeRaw::torrent_invalid_hashes;
-            case lt::errors::too_many_pieces_in_torrent:
-                return ErrorCodeRaw::too_many_pieces_in_torrent;
-            case lt::errors::invalid_swarm_metadata:
-                return ErrorCodeRaw::invalid_swarm_metadata;
-            case lt::errors::invalid_bencoding:
-                return ErrorCodeRaw::invalid_bencoding;
-            case lt::errors::no_files_in_torrent:
-                return ErrorCodeRaw::no_files_in_torrent;
-            case lt::errors::invalid_escaped_string:
-                return ErrorCodeRaw::invalid_escaped_string;
-            case lt::errors::session_is_closing:
-                return ErrorCodeRaw::session_is_closing;
-            case lt::errors::duplicate_torrent:
-                return ErrorCodeRaw::duplicate_torrent;
-            case lt::errors::invalid_torrent_handle:
-                return ErrorCodeRaw::invalid_torrent_handle;
-            case lt::errors::invalid_entry_type:
-                return ErrorCodeRaw::invalid_entry_type;
-            case lt::errors::missing_info_hash_in_uri:
-                return ErrorCodeRaw::missing_info_hash_in_uri;
-            case lt::errors::file_too_short:
-                return ErrorCodeRaw::file_too_short;
-            case lt::errors::unsupported_url_protocol:
-                return ErrorCodeRaw::unsupported_url_protocol;
-            case lt::errors::url_parse_error:
-                return ErrorCodeRaw::url_parse_error;
-            case lt::errors::peer_sent_empty_piece:
-                return ErrorCodeRaw::peer_sent_empty_piece;
-            case lt::errors::parse_failed:
-                return ErrorCodeRaw::parse_failed;
-            case lt::errors::invalid_file_tag:
-                return ErrorCodeRaw::invalid_file_tag;
-            case lt::errors::missing_info_hash:
-                return ErrorCodeRaw::missing_info_hash;
-            case lt::errors::mismatching_info_hash:
-                return ErrorCodeRaw::mismatching_info_hash;
-            case lt::errors::invalid_hostname:
-                return ErrorCodeRaw::invalid_hostname;
-            case lt::errors::invalid_port:
-                return ErrorCodeRaw::invalid_port;
-            case lt::errors::port_blocked:
-                return ErrorCodeRaw::port_blocked;
-            case lt::errors::expected_close_bracket_in_address:
-                return ErrorCodeRaw::expected_close_bracket_in_address;
-            case lt::errors::destructing_torrent:
-                return ErrorCodeRaw::destructing_torrent;
-            case lt::errors::timed_out:
-                return ErrorCodeRaw::timed_out;
-            case lt::errors::upload_upload_connection:
-                return ErrorCodeRaw::upload_upload_connection;
-            case lt::errors::uninteresting_upload_peer:
-                return ErrorCodeRaw::uninteresting_upload_peer;
-            case lt::errors::invalid_info_hash:
-                return ErrorCodeRaw::invalid_info_hash;
-            case lt::errors::torrent_paused:
-                return ErrorCodeRaw::torrent_paused;
-            case lt::errors::invalid_have:
-                return ErrorCodeRaw::invalid_have;
-            case lt::errors::invalid_bitfield_size:
-                return ErrorCodeRaw::invalid_bitfield_size;
-            case lt::errors::too_many_requests_when_choked:
-                return ErrorCodeRaw::too_many_requests_when_choked;
-            case lt::errors::invalid_piece:
-                return ErrorCodeRaw::invalid_piece;
-            case lt::errors::no_memory:
-                return ErrorCodeRaw::no_memory;
-            case lt::errors::torrent_aborted:
-                return ErrorCodeRaw::torrent_aborted;
-            case lt::errors::self_connection:
-                return ErrorCodeRaw::self_connection;
-            case lt::errors::invalid_piece_size:
-                return ErrorCodeRaw::invalid_piece_size;
-            case lt::errors::timed_out_no_interest:
-                return ErrorCodeRaw::timed_out_no_interest;
-            case lt::errors::timed_out_inactivity:
-                return ErrorCodeRaw::timed_out_inactivity;
-            case lt::errors::timed_out_no_handshake:
-                return ErrorCodeRaw::timed_out_no_handshake;
-            case lt::errors::timed_out_no_request:
-                return ErrorCodeRaw::timed_out_no_request;
-            case lt::errors::invalid_choke:
-                return ErrorCodeRaw::invalid_choke;
-            case lt::errors::invalid_unchoke:
-                return ErrorCodeRaw::invalid_unchoke;
-            case lt::errors::invalid_interested:
-                return ErrorCodeRaw::invalid_interested;
-            case lt::errors::invalid_not_interested:
-                return ErrorCodeRaw::invalid_not_interested;
-            case lt::errors::invalid_request:
-                return ErrorCodeRaw::invalid_request;
-            case lt::errors::invalid_hash_list:
-                return ErrorCodeRaw::invalid_hash_list;
-            case lt::errors::invalid_hash_piece:
-                return ErrorCodeRaw::invalid_hash_piece;
-            case lt::errors::invalid_cancel:
-                return ErrorCodeRaw::invalid_cancel;
-            case lt::errors::invalid_dht_port:
-                return ErrorCodeRaw::invalid_dht_port;
-            case lt::errors::invalid_suggest:
-                return ErrorCodeRaw::invalid_suggest;
-            case lt::errors::invalid_have_all:
-                return ErrorCodeRaw::invalid_have_all;
-            case lt::errors::invalid_have_none:
-                return ErrorCodeRaw::invalid_have_none;
-            case lt::errors::invalid_reject:
-                return ErrorCodeRaw::invalid_reject;
-            case lt::errors::invalid_allow_fast:
-                return ErrorCodeRaw::invalid_allow_fast;
-            case lt::errors::invalid_extended:
-                return ErrorCodeRaw::invalid_extended;
-            case lt::errors::invalid_message:
-                return ErrorCodeRaw::invalid_message;
-            case lt::errors::sync_hash_not_found:
-                return ErrorCodeRaw::sync_hash_not_found;
-            case lt::errors::invalid_encryption_constant:
-                return ErrorCodeRaw::invalid_encryption_constant;
-            case lt::errors::no_plaintext_mode:
-                return ErrorCodeRaw::no_plaintext_mode;
-            case lt::errors::no_rc4_mode:
-                return ErrorCodeRaw::no_rc4_mode;
-            case lt::errors::unsupported_encryption_mode:
-                return ErrorCodeRaw::unsupported_encryption_mode;
-            case lt::errors::unsupported_encryption_mode_selected:
-                return ErrorCodeRaw::unsupported_encryption_mode_selected;
-            case lt::errors::invalid_pad_size:
-                return ErrorCodeRaw::invalid_pad_size;
-            case lt::errors::invalid_encrypt_handshake:
-                return ErrorCodeRaw::invalid_encrypt_handshake;
-            case lt::errors::no_incoming_encrypted:
-                return ErrorCodeRaw::no_incoming_encrypted;
-            case lt::errors::no_incoming_regular:
-                return ErrorCodeRaw::no_incoming_regular;
-            case lt::errors::duplicate_peer_id:
-                return ErrorCodeRaw::duplicate_peer_id;
-            case lt::errors::torrent_removed:
-                return ErrorCodeRaw::torrent_removed;
-            case lt::errors::packet_too_large:
-                return ErrorCodeRaw::packet_too_large;
-            default:
-                return ErrorCodeRaw::error_code_max;
+    Error error_code_to_error(lt::error_code e) {
+        if (e.category() == lt::gzip_category()) {
+            return Error {
+                ErrorCategory::GzipError,
+                e.value(),
+            };
         }
+        else if (e.category() == lt::http_category()) {
+            return Error {
+                ErrorCategory::HttpError,
+                e.value(),
+            };
+        }
+        else if (e.category() == lt::i2p_category()) {
+            return Error {
+                ErrorCategory::I2pError,
+                e.value(),
+            };
+        }
+        else if (e.category() == lt::upnp_category()) {
+            return Error {
+                ErrorCategory::UpnpError,
+                e.value(),
+            };
+        }
+        else if (e.category() == lt::socks_category()) {
+            return Error {
+                ErrorCategory::SocksError,
+                e.value(),
+            };
+        }
+        else if (e.category() == lt::pcp_category()) {
+            return Error {
+                ErrorCategory::PcpError,
+                e.value(),
+            };
+        }
+        else if (e.category() == lt::bdecode_category()) {
+            return Error {
+                ErrorCategory::BdecodeError,
+                e.value(),
+            };
+        }
+        else if (e.category() == lt::libtorrent_category()) {
+            return Error {
+                ErrorCategory::LibtorrentError,
+                e.value(),
+            };
+        }
+        return Error {
+            ErrorCategory::Unknown,
+            e.value(),
+        };
     }
 
-    ErrorCodeRaw read_piece_alert_get_error(lt::read_piece_alert* a) {
-        return error_code_enum_to_error_code_raw(a->error);
+    Error read_piece_alert_get_error(lt::read_piece_alert* a) {
+        return error_code_to_error(a->error);
     }
 }

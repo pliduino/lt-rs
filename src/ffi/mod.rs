@@ -120,6 +120,7 @@ pub(crate) mod ffi {
         alert: *mut alert,
     }
 
+    #[repr(i32)]
     enum ErrorCodeRaw {
         no_error = 0,
         file_collision,
@@ -309,7 +310,23 @@ pub(crate) mod ffi {
         torrent_invalid_pad_file,
 
         error_code_max,
-        unknown,
+    }
+
+    enum ErrorCategory {
+        LibtorrentError,
+        HttpError,
+        GzipError,
+        I2pError,
+        PcpError,
+        BdecodeError,
+        SocksError,
+        UpnpError,
+        Unknown,
+    }
+
+    struct Error {
+        category: ErrorCategory,
+        code: i32,
     }
 
     #[namespace = "libtorrent"]

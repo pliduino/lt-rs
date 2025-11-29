@@ -1,6 +1,6 @@
 use crate::{
     alerts::ReadPieceAlert,
-    errors::LibTorrentError,
+    errors::{LibtorrentError, LtrsError},
     ffi::alerts::read_piece::ffi::{read_piece_alert_get_error, read_piece_alert_get_size},
     torrent_handle::TorrentHandle,
 };
@@ -30,7 +30,7 @@ impl ReadPieceAlert {
         unsafe { read_piece_alert_get_size(self.0) }
     }
 
-    pub fn error(&self) -> LibTorrentError {
+    pub fn error(&self) -> LtrsError {
         unsafe { read_piece_alert_get_error(self.0) }.into()
     }
 }

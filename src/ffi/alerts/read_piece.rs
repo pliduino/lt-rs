@@ -7,10 +7,10 @@ pub(crate) mod ffi {
     unsafe extern "C++" {
         include!("cpp/alerts/read_piece.h");
         include!("lt-rs/src/ffi/mod.rs.h");
-        type ErrorCodeRaw = crate::ffi::ffi::ErrorCodeRaw;
+        type Error = crate::ffi::ffi::Error;
 
         unsafe fn read_piece_alert_get_size(alert: *mut read_piece_alert) -> i32;
 
-        unsafe fn read_piece_alert_get_error(alert: *mut read_piece_alert) -> ErrorCodeRaw;
+        unsafe fn read_piece_alert_get_error(alert: *mut read_piece_alert) -> Error;
     }
 }
