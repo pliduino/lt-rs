@@ -18,11 +18,11 @@ impl ReadPieceAlert {
         self.as_torrent_alert().message()
     }
 
-    pub fn piece(&self) -> u32 {
+    pub fn piece(&self) {
         unimplemented!()
     }
 
-    pub fn buffer(&self) -> &[u8] {
+    pub fn buffer(&self) {
         unimplemented!()
     }
 

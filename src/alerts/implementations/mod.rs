@@ -1,2 +1,5 @@
-mod read_piece;
-mod torrent_removed;
+pub mod file_completed;
+pub mod file_renamed;
+pub mod file_rename_failed;
+pub mod read_piece;
+pub mod torrent_removed;

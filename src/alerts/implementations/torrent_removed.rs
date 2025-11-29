@@ -23,7 +23,7 @@ impl TorrentRemovedAlert {
         hash.into()
     }
 
-    pub fn userdata(&self) -> Option<&String> {
+    pub fn userdata(&self) {
         unimplemented!()
     }
 }
