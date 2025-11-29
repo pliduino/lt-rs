@@ -1,4 +1,6 @@
-use crate::ffi::error::ffi::{self, ErrorCodeRaw};
+use num_enum::FromPrimitive;
+
+use crate::ffi::error::ffi::{self};
 
 pub enum LtrsError {
     LibtorrentError(LibtorrentError),
@@ -14,10 +16,11 @@ pub enum LtrsError {
     Unknown(i32),
 }
 
-#[derive(Debug)]
+#[derive(Debug, FromPrimitive)]
+#[repr(i32)]
 pub enum LibtorrentError {
     /// Not an error
-    NoError,
+    NoError = 0,
     /// Two torrents has files which end up overwriting each other
     FileCollision,
     /// A piece did not match its piece hash
@@ -298,7 +301,7 @@ pub enum LibtorrentError {
 
     /// The NAT-PMP router responded with an unsupported protocol version
     #[deprecated]
-    UnsupportedProtocolVersion,
+    UnsupportedProtocolVersion = 120,
     /// You are not authorized to map ports on this NAT-PMP router
     #[deprecated]
     NatpmpNotAuthorized,
@@ -313,7 +316,7 @@ pub enum LibtorrentError {
     UnsupportedOpcode,
 
     /// The resume data file is missing the ``file sizes`` entry
-    MissingFileSizes,
+    MissingFileSizes = 130,
     /// The resume data file ``file sizes`` entry is empty
     NoFilesInResumeData,
     /// The resume data file is missing the ``pieces`` and ``slots`` entry
@@ -353,7 +356,7 @@ pub enum LibtorrentError {
     InvalidSavePath,
 
     /// The HTTP header was not correctly formatted
-    HttpParseError,
+    HttpParseError = 150,
     /// The HTTP response was in the 300-399 range but lacked a location
     /// header
     HttpMissingLocation,
@@ -362,13 +365,13 @@ pub enum LibtorrentError {
     HttpFailedDecompress,
 
     /// The URL specified an i2p address, but no i2p router is configured
-    NoI2pRouter,
+    NoI2pRouter = 160,
     /// i2p acceptor is not available yet, can't announce without endpoint
     NoI2pEndpoint,
 
     /// The tracker URL doesn't support transforming it into a scrape
     /// URL. i.e. it doesn't contain "announce.
-    ScrapeNotAvailable,
+    ScrapeNotAvailable = 170,
     /// invalid tracker response
     InvalidTrackerResponse,
     /// invalid peer dictionary entry. Not a dictionary
@@ -393,7 +396,7 @@ pub enum LibtorrentError {
 
     /// expected string in bencoded string
     #[deprecated]
-    ExpectedString,
+    ExpectedString190,
     /// expected colon in bencoded string
     #[deprecated]
     ExpectedColon,
@@ -414,14 +417,14 @@ pub enum LibtorrentError {
     Overflow,
 
     /// random number generation failed
-    NoEntropy,
+    NoEntropy = 200,
     /// blocked by SSRF mitigation
     SsrvMitigation,
     /// blocked because IDNA host names are banned
     BlockedByIdna,
 
     /// the torrent file has an unknown meta version
-    TorrentUnknownVersion,
+    TorrentUnknownVersion = 210,
     /// the v2 torrent file has no file tree
     TorrentMissingFileTree,
     /// the torrent contains v2 keys but does not specify meta version 2
@@ -440,14 +443,17 @@ pub enum LibtorrentError {
     TorrentInvalidPadFile,
 
     /// the number of error codes
-    ErrorCodeMax,
+    // ErrorCodeMax,
 
     //// The value is not used by libtorrent itself, it is only used
     //// internally to match againt C++ integers and prevent crashes
     //// as otherwise we would need a unreachable!() in the match arms.
+    #[num_enum(default)]
     UnknownErrorCode,
 }
 
+#[derive(Debug, FromPrimitive)]
+#[repr(i32)]
 pub enum HttpError {
     Cont = 100,
     Ok = 200,
@@ -466,8 +472,12 @@ pub enum HttpError {
     NotImplemented = 501,
     BadGateway = 502,
     ServiceUnavailable = 503,
+    #[num_enum(default)]
+    UnknownErrorCode,
 }
 
+#[derive(Debug, FromPrimitive)]
+#[repr(i32)]
 pub enum I2pError {
     NoError = 0,
     ParseFailed,
@@ -478,9 +488,12 @@ pub enum I2pError {
     Timeout,
     KeyNotFound,
     DuplicatedId,
-    Unknown,
+    #[num_enum(default)]
+    UnknownErrorCode,
 }
 
+#[derive(Debug, FromPrimitive)]
+#[repr(i32)]
 pub enum GzipError {
     NoError = 0,
     InvalidGzipHeader,
@@ -498,9 +511,12 @@ pub enum GzipError {
     InvalidLiteralCodeInBlock,
     DistanceTooFarBackInBlock,
     UnknownGzipError,
-    ErrorCodeMax,
+    #[num_enum(default)]
+    UnknownErrorCode,
 }
 
+#[derive(Debug, FromPrimitive)]
+#[repr(i32)]
 pub enum PcpError {
     Success = 0,
     UnsupportedVersion,
@@ -516,8 +532,12 @@ pub enum PcpError {
     CannotProvideExternal,
     AddressMismatch,
     ExcessiveRemotePeers,
+    #[num_enum(default)]
+    UnknownErrorCode,
 }
 
+#[derive(Debug, FromPrimitive)]
+#[repr(i32)]
 pub enum BdecodeError {
     NoError = 0,
     ExpectedDigit,
@@ -527,9 +547,12 @@ pub enum BdecodeError {
     DepthExceeded,
     LimitExceeded,
     Overflow,
-    ErrorCodeMax,
+    #[num_enum(default)]
+    UnknownErrorCode,
 }
 
+#[derive(Debug, FromPrimitive)]
+#[repr(i32)]
 pub enum SocksError {
     NoError = 0,
     UnsupportedVersion,
@@ -541,9 +564,12 @@ pub enum SocksError {
     CommandNotSupported,
     NoIdentd,
     IdentdError,
-    NumErrors,
+    #[num_enum(default)]
+    ErrorCodeMax,
 }
 
+#[derive(Debug, FromPrimitive)]
+#[repr(i32)]
 pub enum UpnpError {
     NoError = 0,
     InvalidArgument = 402,
@@ -556,6 +582,8 @@ pub enum UpnpError {
     OnlyPermanentLeasesSupported = 725,
     RemoteHostMustBeWildcarded = 726,
     ExternalPortMustBeWildcarded = 727,
+    #[num_enum(default)]
+    UnknownErrorCode,
 }
 
 impl From<ffi::Error> for LtrsError {
@@ -570,266 +598,6 @@ impl From<ffi::Error> for LtrsError {
             ffi::ErrorCategory::UpnpError => LtrsError::UpnpError(err.code.into()),
             ffi::ErrorCategory::I2pError => LtrsError::I2pError(err.code.into()),
             _ => LtrsError::Unknown(err.code),
-        }
-    }
-}
-
-impl From<i32> for LibtorrentError {
-    fn from(code: i32) -> Self {
-        ErrorCodeRaw { repr: code }.into()
-    }
-}
-
-impl From<i32> for HttpError {
-    fn from(code: i32) -> Self {
-        unimplemented!()
-    }
-}
-
-impl From<i32> for UpnpError {
-    fn from(code: i32) -> Self {
-        unimplemented!()
-    }
-}
-
-impl From<i32> for I2pError {
-    fn from(code: i32) -> Self {
-        unimplemented!()
-    }
-}
-
-impl From<i32> for BdecodeError {
-    fn from(code: i32) -> Self {
-        unimplemented!()
-    }
-}
-
-impl From<i32> for SocksError {
-    fn from(code: i32) -> Self {
-        unimplemented!()
-    }
-}
-
-impl From<i32> for GzipError {
-    fn from(code: i32) -> Self {
-        unimplemented!()
-    }
-}
-
-impl From<i32> for PcpError {
-    fn from(code: i32) -> Self {
-        unimplemented!()
-    }
-}
-
-#[allow(deprecated)]
-impl From<ErrorCodeRaw> for LibtorrentError {
-    fn from(code: ErrorCodeRaw) -> Self {
-        match code {
-            ErrorCodeRaw::no_error => LibtorrentError::NoError,
-            ErrorCodeRaw::file_collision => LibtorrentError::FileCollision,
-            ErrorCodeRaw::failed_hash_check => LibtorrentError::FailedHashCheck,
-            ErrorCodeRaw::torrent_is_no_dict => LibtorrentError::TorrentIsNoDict,
-            ErrorCodeRaw::torrent_missing_info => LibtorrentError::TorrentMissingInfo,
-            ErrorCodeRaw::torrent_info_no_dict => LibtorrentError::TorrentInfoNoDict,
-            ErrorCodeRaw::torrent_missing_piece_length => {
-                LibtorrentError::TorrentMissingPieceLength
-            }
-            ErrorCodeRaw::torrent_missing_name => LibtorrentError::TorrentMissingName,
-            ErrorCodeRaw::torrent_invalid_name => LibtorrentError::TorrentInvalidName,
-            ErrorCodeRaw::torrent_invalid_length => LibtorrentError::TorrentInvalidLength,
-            ErrorCodeRaw::torrent_file_parse_failed => LibtorrentError::TorrentFileParseFailed,
-            ErrorCodeRaw::torrent_missing_pieces => LibtorrentError::TorrentMissingPieces,
-            ErrorCodeRaw::torrent_invalid_hashes => LibtorrentError::TorrentInvalidHashes,
-            ErrorCodeRaw::too_many_pieces_in_torrent => LibtorrentError::TooManyPiecesInTorrent,
-            ErrorCodeRaw::invalid_swarm_metadata => LibtorrentError::InvalidSwarmMetadata,
-            ErrorCodeRaw::invalid_bencoding => LibtorrentError::InvalidBencoding,
-            ErrorCodeRaw::no_files_in_torrent => LibtorrentError::NoFilesInTorrent,
-            ErrorCodeRaw::invalid_escaped_string => LibtorrentError::InvalidEscapedString,
-            ErrorCodeRaw::session_is_closing => LibtorrentError::SessionIsClosing,
-            ErrorCodeRaw::duplicate_torrent => LibtorrentError::DuplicateTorrent,
-            ErrorCodeRaw::invalid_torrent_handle => LibtorrentError::InvalidTorrentHandle,
-            ErrorCodeRaw::invalid_entry_type => LibtorrentError::InvalidEntryType,
-            ErrorCodeRaw::missing_info_hash_in_uri => LibtorrentError::MissingInfoHashInUri,
-            ErrorCodeRaw::file_too_short => LibtorrentError::FileTooShort,
-            ErrorCodeRaw::unsupported_url_protocol => LibtorrentError::UnsupportedUrlProtocol,
-            ErrorCodeRaw::url_parse_error => LibtorrentError::UrlParseError,
-            ErrorCodeRaw::peer_sent_empty_piece => LibtorrentError::PeerSentEmptyPiece,
-            ErrorCodeRaw::parse_failed => LibtorrentError::ParseFailed,
-            ErrorCodeRaw::invalid_file_tag => LibtorrentError::InvalidFileTag,
-            ErrorCodeRaw::missing_info_hash => LibtorrentError::MissingInfoHash,
-            ErrorCodeRaw::mismatching_info_hash => LibtorrentError::MismatchingInfoHash,
-            ErrorCodeRaw::invalid_hostname => LibtorrentError::InvalidHostname,
-            ErrorCodeRaw::invalid_port => LibtorrentError::InvalidPort,
-            ErrorCodeRaw::port_blocked => LibtorrentError::PortBlocked,
-            ErrorCodeRaw::expected_close_bracket_in_address => {
-                LibtorrentError::ExpectedCloseBracketInAddress
-            }
-            ErrorCodeRaw::destructing_torrent => LibtorrentError::DestructingTorrent,
-            ErrorCodeRaw::timed_out => LibtorrentError::TimedOut,
-            ErrorCodeRaw::upload_upload_connection => LibtorrentError::UploadUploadConnection,
-            ErrorCodeRaw::uninteresting_upload_peer => LibtorrentError::UninterestingUploadPeer,
-            ErrorCodeRaw::invalid_info_hash => LibtorrentError::InvalidInfoHash,
-            ErrorCodeRaw::torrent_paused => LibtorrentError::TorrentPaused,
-            ErrorCodeRaw::invalid_have => LibtorrentError::InvalidHave,
-            ErrorCodeRaw::invalid_bitfield_size => LibtorrentError::InvalidBitfieldSize,
-            ErrorCodeRaw::too_many_requests_when_choked => {
-                LibtorrentError::TooManyRequestsWhenChoked
-            }
-            ErrorCodeRaw::invalid_piece => LibtorrentError::InvalidPiece,
-            ErrorCodeRaw::no_memory => LibtorrentError::NoMemory,
-            ErrorCodeRaw::torrent_aborted => LibtorrentError::TorrentAborted,
-            ErrorCodeRaw::self_connection => LibtorrentError::SelfConnection,
-            ErrorCodeRaw::invalid_piece_size => LibtorrentError::InvalidPieceSize,
-            ErrorCodeRaw::timed_out_no_interest => LibtorrentError::TimedOutNoInterest,
-            ErrorCodeRaw::timed_out_inactivity => LibtorrentError::TimedOutInactivity,
-            ErrorCodeRaw::timed_out_no_handshake => LibtorrentError::TimedOutNoHandshake,
-            ErrorCodeRaw::timed_out_no_request => LibtorrentError::TimedOutNoRequest,
-            ErrorCodeRaw::invalid_choke => LibtorrentError::InvalidChoke,
-            ErrorCodeRaw::invalid_unchoke => LibtorrentError::InvalidUnchoke,
-            ErrorCodeRaw::invalid_interested => LibtorrentError::InvalidInterested,
-            ErrorCodeRaw::invalid_not_interested => LibtorrentError::InvalidNotInterested,
-            ErrorCodeRaw::invalid_request => LibtorrentError::InvalidRequest,
-            ErrorCodeRaw::invalid_hash_list => LibtorrentError::InvalidHashList,
-            ErrorCodeRaw::invalid_hash_piece => LibtorrentError::InvalidHashPiece,
-            ErrorCodeRaw::invalid_cancel => LibtorrentError::InvalidCancel,
-            ErrorCodeRaw::invalid_dht_port => LibtorrentError::InvalidDhtPort,
-            ErrorCodeRaw::invalid_suggest => LibtorrentError::InvalidSuggest,
-            ErrorCodeRaw::invalid_have_all => LibtorrentError::InvalidHaveAll,
-            ErrorCodeRaw::invalid_have_none => LibtorrentError::InvalidHaveNone,
-            ErrorCodeRaw::invalid_reject => LibtorrentError::InvalidReject,
-            ErrorCodeRaw::invalid_allow_fast => LibtorrentError::InvalidAllowFast,
-            ErrorCodeRaw::invalid_extended => LibtorrentError::InvalidExtended,
-            ErrorCodeRaw::invalid_message => LibtorrentError::InvalidMessage,
-            ErrorCodeRaw::sync_hash_not_found => LibtorrentError::SyncHashNotFound,
-            ErrorCodeRaw::invalid_encryption_constant => LibtorrentError::InvalidEncryptionConstant,
-            ErrorCodeRaw::no_plaintext_mode => LibtorrentError::NoPlaintextMode,
-            ErrorCodeRaw::no_rc4_mode => LibtorrentError::NoRc4Mode,
-            ErrorCodeRaw::unsupported_encryption_mode => LibtorrentError::UnsupportedEncryptionMode,
-            ErrorCodeRaw::unsupported_encryption_mode_selected => {
-                LibtorrentError::UnsupportedEncryptionModeSelected
-            }
-            ErrorCodeRaw::invalid_pad_size => LibtorrentError::InvalidPadSize,
-            ErrorCodeRaw::invalid_encrypt_handshake => LibtorrentError::InvalidEncryptHandshake,
-            ErrorCodeRaw::no_incoming_encrypted => LibtorrentError::NoIncomingEncrypted,
-            ErrorCodeRaw::no_incoming_regular => LibtorrentError::NoIncomingRegular,
-            ErrorCodeRaw::duplicate_peer_id => LibtorrentError::DuplicatePeerId,
-            ErrorCodeRaw::torrent_removed => LibtorrentError::TorrentRemoved,
-            ErrorCodeRaw::packet_too_large => LibtorrentError::PacketTooLarge,
-
-            ErrorCodeRaw::reserved => LibtorrentError::Reserved,
-
-            ErrorCodeRaw::http_error => LibtorrentError::HttpError,
-            ErrorCodeRaw::missing_location => LibtorrentError::MissingLocation,
-            ErrorCodeRaw::invalid_redirection => LibtorrentError::InvalidRedirection,
-            ErrorCodeRaw::redirecting => LibtorrentError::Redirecting,
-            ErrorCodeRaw::invalid_range => LibtorrentError::InvalidRange,
-            ErrorCodeRaw::no_content_length => LibtorrentError::NoContentLength,
-            ErrorCodeRaw::banned_by_ip_filter => LibtorrentError::BannedByIpFilter,
-            ErrorCodeRaw::too_many_connections => LibtorrentError::TooManyConnections,
-            ErrorCodeRaw::peer_banned => LibtorrentError::PeerBanned,
-            ErrorCodeRaw::stopping_torrent => LibtorrentError::StoppingTorrent,
-            ErrorCodeRaw::too_many_corrupt_pieces => LibtorrentError::TooManyCorruptPieces,
-            ErrorCodeRaw::torrent_not_ready => LibtorrentError::TorrentNotReady,
-            ErrorCodeRaw::peer_not_constructed => LibtorrentError::PeerNotConstructed,
-            ErrorCodeRaw::session_closing => LibtorrentError::SessionClosing,
-            ErrorCodeRaw::optimistic_disconnect => LibtorrentError::OptimisticDisconnect,
-            ErrorCodeRaw::torrent_finished => LibtorrentError::TorrentFinished,
-            ErrorCodeRaw::no_router => LibtorrentError::NoRouter,
-            ErrorCodeRaw::metadata_too_large => LibtorrentError::MetadataTooLarge,
-            ErrorCodeRaw::invalid_metadata_request => LibtorrentError::InvalidMetadataRequest,
-            ErrorCodeRaw::invalid_metadata_size => LibtorrentError::InvalidMetadataSize,
-            ErrorCodeRaw::invalid_metadata_offset => LibtorrentError::InvalidMetadataOffset,
-            ErrorCodeRaw::invalid_metadata_message => LibtorrentError::InvalidMetadataMessage,
-            ErrorCodeRaw::pex_message_too_large => LibtorrentError::PexMessageTooLarge,
-            ErrorCodeRaw::invalid_pex_message => LibtorrentError::InvalidPexMessage,
-            ErrorCodeRaw::invalid_lt_tracker_message => LibtorrentError::InvalidLtTrackerMessage,
-            ErrorCodeRaw::too_frequent_pex => LibtorrentError::TooFrequentPex,
-            ErrorCodeRaw::no_metadata => LibtorrentError::NoMetadata,
-            ErrorCodeRaw::invalid_dont_have => LibtorrentError::InvalidDontHave,
-            ErrorCodeRaw::requires_ssl_connection => LibtorrentError::RequiresSslConnection,
-            ErrorCodeRaw::invalid_ssl_cert => LibtorrentError::InvalidSslCert,
-            ErrorCodeRaw::not_an_ssl_torrent => LibtorrentError::NotAnSslTorrent,
-            ErrorCodeRaw::banned_by_port_filter => LibtorrentError::BannedByPortFilter,
-            ErrorCodeRaw::invalid_session_handle => LibtorrentError::InvalidSessionHandle,
-            ErrorCodeRaw::invalid_listen_socket => LibtorrentError::InvalidListenSocket,
-            ErrorCodeRaw::invalid_hash_request => LibtorrentError::InvalidHashRequest,
-            ErrorCodeRaw::invalid_hashes => LibtorrentError::InvalidHashes,
-            ErrorCodeRaw::invalid_hash_reject => LibtorrentError::InvalidHashReject,
-
-            ErrorCodeRaw::unsupported_protocol_version => {
-                LibtorrentError::UnsupportedProtocolVersion
-            }
-            ErrorCodeRaw::natpmp_not_authorized => LibtorrentError::NatpmpNotAuthorized,
-            ErrorCodeRaw::network_failure => LibtorrentError::NetworkFailure,
-            ErrorCodeRaw::no_resources => LibtorrentError::NoResources,
-            ErrorCodeRaw::unsupported_opcode => LibtorrentError::UnsupportedOpcode,
-
-            ErrorCodeRaw::missing_file_sizes => LibtorrentError::MissingFileSizes,
-            ErrorCodeRaw::no_files_in_resume_data => LibtorrentError::NoFilesInResumeData,
-            ErrorCodeRaw::missing_pieces => LibtorrentError::MissingPieces,
-            ErrorCodeRaw::mismatching_number_of_files => LibtorrentError::MismatchingNumberOfFiles,
-            ErrorCodeRaw::mismatching_file_size => LibtorrentError::MismatchingFileSize,
-            ErrorCodeRaw::mismatching_file_timestamp => LibtorrentError::MismatchingFileTimestamp,
-            ErrorCodeRaw::not_a_dictionary => LibtorrentError::NotADictionary,
-            ErrorCodeRaw::invalid_blocks_per_piece => LibtorrentError::InvalidBlocksPerPiece,
-            ErrorCodeRaw::missing_slots => LibtorrentError::MissingSlots,
-            ErrorCodeRaw::too_many_slots => LibtorrentError::TooManySlots,
-            ErrorCodeRaw::invalid_slot_list => LibtorrentError::InvalidSlotList,
-            ErrorCodeRaw::invalid_piece_index => LibtorrentError::InvalidPieceIndex,
-            ErrorCodeRaw::pieces_need_reorder => LibtorrentError::PiecesNeedReorder,
-            ErrorCodeRaw::resume_data_not_modified => LibtorrentError::ResumeDataNotModified,
-            ErrorCodeRaw::invalid_save_path => LibtorrentError::InvalidSavePath,
-
-            ErrorCodeRaw::http_parse_error => LibtorrentError::HttpParseError,
-            ErrorCodeRaw::http_missing_location => LibtorrentError::HttpMissingLocation,
-            ErrorCodeRaw::http_failed_decompress => LibtorrentError::HttpFailedDecompress,
-
-            ErrorCodeRaw::no_i2p_router => LibtorrentError::NoI2pRouter,
-            ErrorCodeRaw::no_i2p_endpoint => LibtorrentError::NoI2pEndpoint,
-
-            ErrorCodeRaw::scrape_not_available => LibtorrentError::ScrapeNotAvailable,
-            ErrorCodeRaw::invalid_tracker_response => LibtorrentError::InvalidTrackerResponse,
-            ErrorCodeRaw::invalid_peer_dict => LibtorrentError::InvalidPeerDict,
-            ErrorCodeRaw::tracker_failure => LibtorrentError::TrackerFailure,
-            ErrorCodeRaw::invalid_files_entry => LibtorrentError::InvalidFilesEntry,
-            ErrorCodeRaw::invalid_hash_entry => LibtorrentError::InvalidHashEntry,
-            ErrorCodeRaw::invalid_peers_entry => LibtorrentError::InvalidPeersEntry,
-            ErrorCodeRaw::invalid_tracker_response_length => {
-                LibtorrentError::InvalidTrackerResponseLength
-            }
-
-            ErrorCodeRaw::invalid_tracker_transaction_id => {
-                LibtorrentError::InvalidTrackerTransactionId
-            }
-            ErrorCodeRaw::invalid_tracker_action => LibtorrentError::InvalidTrackerAction,
-            ErrorCodeRaw::announce_skipped => LibtorrentError::AnnounceSkipped,
-
-            ErrorCodeRaw::expected_string => LibtorrentError::ExpectedString,
-            ErrorCodeRaw::expected_colon => LibtorrentError::ExpectedColon,
-            ErrorCodeRaw::unexpected_eof => LibtorrentError::UnexpectedEof,
-            ErrorCodeRaw::expected_value => LibtorrentError::ExpectedValue,
-            ErrorCodeRaw::depth_exceeded => LibtorrentError::DepthExceeded,
-            ErrorCodeRaw::limit_exceeded => LibtorrentError::LimitExceeded,
-            ErrorCodeRaw::overflow => LibtorrentError::Overflow,
-
-            ErrorCodeRaw::no_entropy => LibtorrentError::NoEntropy,
-            ErrorCodeRaw::ssrf_mitigation => LibtorrentError::SsrvMitigation,
-            ErrorCodeRaw::blocked_by_idna => LibtorrentError::BlockedByIdna,
-
-            ErrorCodeRaw::torrent_unknown_version => LibtorrentError::TorrentUnknownVersion,
-            ErrorCodeRaw::torrent_missing_file_tree => LibtorrentError::TorrentMissingFileTree,
-            ErrorCodeRaw::torrent_missing_meta_version => {
-                LibtorrentError::TorrentMissingMetaVersion
-            }
-            ErrorCodeRaw::torrent_inconsistent_files => LibtorrentError::TorrentInconsistentFiles,
-            ErrorCodeRaw::torrent_missing_piece_layer => LibtorrentError::TorrentMissingPieceLayer,
-            ErrorCodeRaw::torrent_invalid_piece_layer => LibtorrentError::TorrentInvalidPieceLayer,
-            ErrorCodeRaw::torrent_missing_pieces_root => LibtorrentError::TorrentMissingPiecesRoot,
-            ErrorCodeRaw::torrent_inconsistent_hashes => LibtorrentError::TorrentInconsistentHashes,
-            ErrorCodeRaw::torrent_invalid_pad_file => LibtorrentError::TorrentInvalidPadFile,
-            ErrorCodeRaw::error_code_max => LibtorrentError::ErrorCodeMax,
-            _ => LibtorrentError::UnknownErrorCode,
         }
     }
 }
