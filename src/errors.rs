@@ -1,4 +1,4 @@
-use crate::ffi::ffi::{self, ErrorCodeRaw};
+use crate::ffi::error::ffi::{self, ErrorCodeRaw};
 
 pub enum LtrsError {
     LibtorrentError(LibtorrentError),

@@ -1,6 +1,6 @@
 #include "./read_piece.h"
 
-#include "lt-rs/src/ffi/alerts/read_piece.rs.h"
+#include "cpp/error.h"
 
 #include <libtorrent/gzip.hpp>
 #include <libtorrent/error_code.hpp>
@@ -12,61 +12,6 @@
 namespace ltrs {
     int read_piece_alert_get_size(lt::read_piece_alert* a) {
         return a->size;
-    }
-
-    Error error_code_to_error(lt::error_code e) {
-        if (e.category() == lt::gzip_category()) {
-            return Error {
-                ErrorCategory::GzipError,
-                e.value(),
-            };
-        }
-        else if (e.category() == lt::http_category()) {
-            return Error {
-                ErrorCategory::HttpError,
-                e.value(),
-            };
-        }
-        else if (e.category() == lt::i2p_category()) {
-            return Error {
-                ErrorCategory::I2pError,
-                e.value(),
-            };
-        }
-        else if (e.category() == lt::upnp_category()) {
-            return Error {
-                ErrorCategory::UpnpError,
-                e.value(),
-            };
-        }
-        else if (e.category() == lt::socks_category()) {
-            return Error {
-                ErrorCategory::SocksError,
-                e.value(),
-            };
-        }
-        else if (e.category() == lt::pcp_category()) {
-            return Error {
-                ErrorCategory::PcpError,
-                e.value(),
-            };
-        }
-        else if (e.category() == lt::bdecode_category()) {
-            return Error {
-                ErrorCategory::BdecodeError,
-                e.value(),
-            };
-        }
-        else if (e.category() == lt::libtorrent_category()) {
-            return Error {
-                ErrorCategory::LibtorrentError,
-                e.value(),
-            };
-        }
-        return Error {
-            ErrorCategory::Unknown,
-            e.value(),
-        };
     }
 
     Error read_piece_alert_get_error(lt::read_piece_alert* a) {
