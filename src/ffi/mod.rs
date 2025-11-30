@@ -4,6 +4,7 @@ pub mod alerts {
     pub mod file_renamed;
     pub mod performance;
     pub mod read_piece;
+    pub mod state_changed;
     pub mod torrent_alert;
     pub mod torrent_removed;
 }
