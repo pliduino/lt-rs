@@ -1,7 +1,7 @@
 #pragma once
 
 #include <libtorrent/alert_types.hpp>
-#include "lt-rs/src/ffi/error.rs.h"
+#include "cpp/error.h"
 
 namespace ltrs {
     int read_piece_alert_get_size(lt::read_piece_alert* a);

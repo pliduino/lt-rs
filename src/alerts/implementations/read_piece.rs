@@ -1,6 +1,6 @@
 use crate::{
     alerts::ReadPieceAlert,
-    errors::{LibtorrentError, LtrsError},
+    errors::LtrsError,
     ffi::alerts::read_piece::ffi::{read_piece_alert_get_error, read_piece_alert_get_size},
     torrent_handle::TorrentHandle,
 };

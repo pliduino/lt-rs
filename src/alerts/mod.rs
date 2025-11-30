@@ -3,11 +3,12 @@ use crate::{
     ffi::ffi::{self},
 };
 
-mod implementations;
-mod peer_alert;
-mod torrent_alert;
-mod torrent_state;
-mod tracker_alert;
+pub mod implementations;
+pub mod peer_alert;
+pub mod performance_warning;
+pub mod torrent_alert;
+pub mod torrent_state;
+pub mod tracker_alert;
 
 pub use torrent_alert::TorrentAlert;
 pub use torrent_state::TorrentState;

@@ -1,7 +1,5 @@
 #include "./read_piece.h"
 
-#include "cpp/error.h"
-
 #include <libtorrent/gzip.hpp>
 #include <libtorrent/error_code.hpp>
 #include <libtorrent/i2p_stream.hpp>

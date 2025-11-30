@@ -1,7 +1,7 @@
-use crate::alerts::FileCompletedAlert;
+use crate::{alerts::FileCompletedAlert, torrent_handle::TorrentHandle};
 
 impl FileCompletedAlert {
-    pub fn handle<'a>(&'a self) -> &'a str {
+    pub fn handle<'a>(&'a self) -> TorrentHandle<'a> {
         self.as_torrent_alert().handle()
     }
 

@@ -8,6 +8,7 @@ pub(crate) mod ffi {
         include!("cpp/alerts/file_rename_failed.h");
         type Error = crate::ffi::error::ffi::Error;
 
-        fn file_rename_failed_alert_get_error(alert: &file_rename_failed_alert) -> Error;
+        unsafe fn file_rename_failed_alert_get_error(alert: *mut file_rename_failed_alert)
+        -> Error;
     }
 }

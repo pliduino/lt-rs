@@ -1,7 +1,5 @@
 #include "./error.h"
 
-#include "lt-rs/src/ffi/error.rs.h"
-
 #include <libtorrent/gzip.hpp>
 #include <libtorrent/i2p_stream.hpp>
 #include <libtorrent/socks5_stream.hpp>

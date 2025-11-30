@@ -2,6 +2,7 @@ pub mod alerts {
     pub mod file_completed;
     pub mod file_rename_failed;
     pub mod file_renamed;
+    pub mod performance;
     pub mod read_piece;
     pub mod torrent_alert;
     pub mod torrent_removed;

@@ -375,7 +375,11 @@ void lt_torrent_handle_save_resume_data(const lt::torrent_handle &handle,
 
 void lt_torrent_handle_read_piece(const lt::torrent_handle &handle, int piece) {
   // TODO
-  //  handle.read_piece(piece);
+   // handle.read_piece((lt::piece_index_t)piece);
+
+   // Just so the compiler shuts up for now
+   (void)piece;
+   (void)handle;
 }
 
 // ╔===========================================================================╗

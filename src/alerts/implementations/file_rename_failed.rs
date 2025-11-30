@@ -1,10 +1,11 @@
 use crate::{
     alerts::FileRenameFailedAlert, errors::LtrsError,
     ffi::alerts::file_rename_failed::ffi::file_rename_failed_alert_get_error,
+    torrent_handle::TorrentHandle,
 };
 
 impl FileRenameFailedAlert {
-    pub fn handle<'a>(&'a self) -> &'a str {
+    pub fn handle<'a>(&'a self) -> TorrentHandle<'a> {
         self.as_torrent_alert().handle()
     }
 
@@ -21,6 +22,6 @@ impl FileRenameFailedAlert {
     }
 
     pub fn error(&self) -> LtrsError {
-        file_rename_failed_alert_get_error(self).into()
+        unsafe { file_rename_failed_alert_get_error(self.0) }.into()
     }
 }

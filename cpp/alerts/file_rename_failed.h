@@ -1,7 +1,6 @@
 #pragma once
 
 #include <libtorrent/alert_types.hpp>
-
 #include "cpp/error.h"
 
 namespace ltrs {

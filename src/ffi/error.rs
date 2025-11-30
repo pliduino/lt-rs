@@ -17,8 +17,4 @@ pub(crate) mod ffi {
         category: ErrorCategory,
         code: i32,
     }
-
-    unsafe extern "C++" {
-        include!("cpp/error.h");
-    }
 }

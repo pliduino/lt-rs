@@ -3,10 +3,11 @@ use crate::{
     ffi::alerts::file_renamed::ffi::{
         file_renamed_alert_get_new_name, file_renamed_alert_get_old_name,
     },
+    torrent_handle::TorrentHandle,
 };
 
 impl FileRenamedAlert {
-    pub fn handle<'a>(&'a self) -> &'a str {
+    pub fn handle<'a>(&'a self) -> TorrentHandle<'a> {
         self.as_torrent_alert().handle()
     }
 
@@ -23,10 +24,10 @@ impl FileRenamedAlert {
     }
 
     pub fn old_name<'a>(&'a self) -> &'a str {
-        file_renamed_alert_get_old_name(self)
+        unsafe { file_renamed_alert_get_old_name(self.0) }
     }
 
     pub fn new_name<'a>(&'a self) -> &'a str {
-        file_renamed_alert_get_new_name(self)
+        unsafe { file_renamed_alert_get_new_name(self.0) }
     }
 }

@@ -120,7 +120,7 @@ impl<'a> TorrentHandle<'a> {
     ///	the alert, but it has not been received yet. Those torrents would
     ///	report that they don't need to save resume data again, and skipped by
     ///	the initial loop, and thwart the counter otherwise.
-    pub fn save_resume_data(&self, flags: ResumeDataFlags) {
+    pub fn save_resume_data(&self, _flags: ResumeDataFlags) {
         // ffi::lt_torrent_handle_save_resume_data(&self.inner, flags.bits());
         unimplemented!()
     }
@@ -132,12 +132,12 @@ impl<'a> TorrentHandle<'a> {
     /// Since this alert is a response to an explicit call, it will always be posted, regardless of the alert mask.
     ///
     /// Note that if you read multiple pieces, the read operations are not guaranteed to finish in the same order as you initiated them.
-    fn read_piece(&self, piece: PieceIndex) {
+    fn read_piece(&self, _piece: PieceIndex) {
         unimplemented!();
         //ffi::lt_torrent_handle_read_piece(&self.inner, piece);
     }
 
-    pub fn status(&self) -> TorrentStatus {
+    pub fn status(&self) -> TorrentStatus<'a> {
         unimplemented!()
         //ffi::lt_torrent_handle_status(&self.inner).into()
     }
