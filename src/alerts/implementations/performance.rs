@@ -1,10 +1,11 @@
 use crate::{
     alerts::{PerformanceAlert, performance_warning::PerformanceWarning},
+    ffi::alerts::performance::ffi::performance_alert_get_warning_code,
     torrent_handle::TorrentHandle,
 };
 
 impl PerformanceAlert {
-    pub fn handle<'a>(&'a self) -> TorrentHandle<'a> {
+    pub fn handle(&self) -> TorrentHandle {
         self.as_torrent_alert().handle()
     }
 
@@ -12,11 +13,11 @@ impl PerformanceAlert {
         self.as_torrent_alert().torrent_name()
     }
 
-    pub fn message<'a>(&'a self) -> &'a str {
+    pub fn message(&self) -> String {
         self.as_torrent_alert().message()
     }
 
     pub fn warning_code(&self) -> PerformanceWarning {
-        PerformanceWarning::from(unsafe { ffi::performance_alert_get_warning_code(self.as_ptr()) })
+        unsafe { performance_alert_get_warning_code(self.0) }.into()
     }
 }

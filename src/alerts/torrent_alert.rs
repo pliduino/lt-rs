@@ -15,7 +15,7 @@ use crate::{
     },
     ffi::{
         alerts::torrent_alert::ffi::{
-            lt_torrent_alert_handle, lt_torrent_alert_message, lt_torrent_alert_torrent_name,
+            torrent_alert_handle, torrent_alert_message, torrent_alert_torrent_name,
         },
         ffi::torrent_alert,
     },
@@ -29,13 +29,13 @@ impl<'a> TorrentAlertRaw<'a> {
         TorrentAlertRaw(alert, PhantomData)
     }
     pub(crate) fn message(&self) -> String {
-        unsafe { lt_torrent_alert_message(self.0) }
+        unsafe { torrent_alert_message(self.0) }
     }
     pub(crate) fn torrent_name(&self) -> &'a str {
-        unsafe { lt_torrent_alert_torrent_name::<'a>(self.0) }
+        unsafe { torrent_alert_torrent_name::<'a>(self.0) }
     }
-    pub(crate) fn handle(&self) -> TorrentHandle<'a> {
-        TorrentHandle::from_inner(unsafe { lt_torrent_alert_handle(self.0) })
+    pub(crate) fn handle(&self) -> TorrentHandle {
+        TorrentHandle::from_inner(unsafe { torrent_alert_handle(self.0) })
     }
 }
 

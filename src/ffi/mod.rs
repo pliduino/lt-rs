@@ -7,9 +7,12 @@ pub mod alerts {
     pub mod state_changed;
     pub mod torrent_alert;
     pub mod torrent_removed;
+    pub mod tracker_alert;
+    pub mod tracker_error;
 }
 
 pub mod error;
+pub mod torrent_handle;
 
 #[cxx::bridge(namespace = "ltrs")]
 pub(crate) mod ffi {
@@ -129,10 +132,10 @@ pub(crate) mod ffi {
 
     #[namespace = "libtorrent"]
     extern "C++" {
+        type torrent_handle = crate::ffi::torrent_handle::ffi::torrent_handle;
         type session;
         type add_torrent_params;
         type settings_pack;
-        type torrent_handle;
         type torrent_status;
         type alert;
         type torrent_alert;
@@ -238,6 +241,8 @@ pub(crate) mod ffi {
         type tracker_list_alert;
     }
 
+    impl UniquePtr<torrent_status> {}
+
     unsafe extern "C++" {
         include!("cpp/lt.h");
 
@@ -276,13 +281,6 @@ pub(crate) mod ffi {
         // ╔===========================================================================╗
         // ║                              Torrent Handle                               ║
         // ╚===========================================================================╝
-
-        fn lt_torrent_handle_in_session(handle: &torrent_handle) -> bool;
-        fn lt_torrent_handle_read_piece(handle: &torrent_handle, piece: i32);
-        fn lt_torrent_handle_status(handle: &torrent_handle) -> UniquePtr<torrent_status>;
-        fn lt_torrent_handle_save_resume_data(handle: &torrent_handle, flags: u8);
-
-        fn lt_torrent_handle_info_hash(handle: &torrent_handle) -> InfoHashCpp;
 
         // ╔===========================================================================╗
         // ║                              Torrent Status                               ║

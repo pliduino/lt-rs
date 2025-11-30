@@ -4,8 +4,10 @@ use crate::{
 };
 
 pub mod implementations;
+pub mod operation;
 pub mod peer_alert;
 pub mod performance_warning;
+pub mod protocol_version;
 pub mod torrent_alert;
 pub mod torrent_state;
 pub mod tracker_alert;
