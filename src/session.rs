@@ -4,7 +4,7 @@ use cxx::UniquePtr;
 
 use crate::{
     add_torrent_params::AddTorrentParams,
-    alerts::AlertList,
+    alerts::Alert,
     ffi::ffi,
     settings_pack::SettingsPack,
     torrent_handle::{StatusFlags, TorrentHandle},
@@ -12,30 +12,27 @@ use crate::{
 
 pub struct LtSession {
     inner: UniquePtr<ffi::session>,
-    alerts: AlertList,
+    alerts: Vec<Alert>,
 }
 
 impl LtSession {
     pub fn new() -> LtSession {
         LtSession {
             inner: ffi::lt_create_session(),
-            // Initializing the AlertList as null is safe because the only way to retrieve it
-            // is by popping alerts again which will overwrite it
-            alerts: AlertList::new(UniquePtr::null()),
+            alerts: Vec::new(),
         }
     }
 
     pub fn new_with_settings(settings: &SettingsPack) -> LtSession {
         LtSession {
             inner: ffi::lt_create_session_with_settings(settings.inner()),
-            // Initializing the AlertList as null is safe because the only way to retrieve it
-            // is by popping alerts again which will overwrite it
-            alerts: AlertList::new(UniquePtr::null()),
+            alerts: Vec::new(),
         }
     }
 
-    pub fn add_torrent(&mut self, params: &AddTorrentParams) -> TorrentHandle {
-        ffi::lt_session_add_torrent(self.inner.pin_mut(), params.inner()).into()
+    pub fn add_torrent<'a>(&'a mut self, _params: &AddTorrentParams) -> TorrentHandle<'a> {
+        unimplemented!()
+        // ffi::lt_session_add_torrent(self.inner.pin_mut(), params.inner()).into()
     }
 
     pub fn async_add_torrent(&mut self, params: &AddTorrentParams) {
@@ -44,10 +41,14 @@ impl LtSession {
 
     pub fn pop_alerts(&mut self) {
         let alerts = ffi::lt_session_pop_alerts(self.inner.pin_mut());
-        self.alerts = AlertList::new(alerts);
+        self.alerts.clear();
+
+        for alert in alerts {
+            self.alerts.push(alert.into());
+        }
     }
 
-    pub fn alerts(&self) -> &AlertList {
+    pub fn alerts(&self) -> &Vec<Alert> {
         &self.alerts
     }
 
@@ -63,8 +64,8 @@ impl LtSession {
     /// the alerts will become invalid.
     ///
     /// As long [`LtSession::pop_alerts()`] is not called again the alerts are valid
-    pub unsafe fn take_alerts(&mut self) -> AlertList {
-        let alerts = mem::replace(&mut self.alerts, AlertList::new(UniquePtr::null()));
+    pub unsafe fn take_alerts(&mut self) -> Vec<Alert> {
+        let alerts = mem::replace(&mut self.alerts, Vec::new());
         alerts
     }
 }

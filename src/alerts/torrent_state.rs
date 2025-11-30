@@ -1,34 +1,50 @@
 use std::fmt::Display;
 
+use num_enum::FromPrimitive;
+
 /// The missing enums are unused enums from versions of libtorrent before 1.2
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, FromPrimitive)]
 #[repr(u8)]
 pub enum TorrentState {
-    CheckingFiles = 1,
-    DownloadingMetadata = 2,
-    Downloading = 3,
-    Finished = 4,
-    Seeding = 5,
+    /// The torrent is in the queue for being checked. But there
+    /// currently is another torrent that are being checked.
+    /// This torrent will wait for its turn.
+    // QueuedForChecking = 0,
+
+    /// The torrent has not started its download yet, and is
+    /// currently checking existing files.
+    CheckingFiles,
+    /// The torrent is trying to download metadata from peers.
+    /// This implies the ut_metadata extension is in use.
+    DownloadingMetadata,
+    /// The torrent is being downloaded. This is the state
+    /// most torrents will be in most of the time. The progress
+    /// meter will tell how much of the files that has been
+    /// downloaded.
+    Downloading,
+    /// In this state the torrent has finished downloading but
+    /// still doesn't have the entire torrent. i.e. some pieces
+    /// are filtered and won't get downloaded.
+    Finished,
+    /// In this state the torrent has finished downloading and
+    /// is a pure seeder.
+    Seeding,
+    /// If the torrent was started in full allocation mode, this
+    /// indicates that the (disk) storage for the torrent is
+    /// allocated.
+    // Allocating = 6,
+
+    /// The torrent is currently checking the fast resume data and
+    /// comparing it to the files on disk. This is typically
+    /// completed in a fraction of a second, but if you add a
+    /// large number of torrents at once, they will queue up.
     CheckingResumeData = 7,
 
-    /// Shouldn't ever be built, if it does it's a bug, please report it.
-    /// This is a fallback type to avoid having a Result in the API due to converting a raw integer
-    /// to an enum.
-    Unknown = 255,
-}
-
-impl From<u8> for TorrentState {
-    fn from(value: u8) -> Self {
-        match value {
-            1 => TorrentState::CheckingFiles,
-            2 => TorrentState::DownloadingMetadata,
-            3 => TorrentState::Downloading,
-            4 => TorrentState::Finished,
-            5 => TorrentState::Seeding,
-            7 => TorrentState::CheckingResumeData,
-            _ => TorrentState::Unknown,
-        }
-    }
+    /// Theoretically this state should never be reached, but
+    /// just in case libtorrent adds a new state and this enum is not updated
+    /// or libtorrent itself somehow reaches an invalid state.
+    #[num_enum(default)]
+    Unknown,
 }
 
 impl Display for TorrentState {
