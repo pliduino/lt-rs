@@ -1,14 +1,12 @@
-use num_enum::FromPrimitive;
-
 /// These constants are used to identify the operation that failed, causing a
 /// peer to disconnect
-#[derive(FromPrimitive)]
+#[cfg_attr(feature = "safe_enums", derive(num_enum::FromPrimitive))]
 #[repr(u8)]
 pub enum Operation {
     /// The error was unexpected and it is unknown which operation caused it
+    #[cfg(feature = "safe_enums")]
     #[num_enum(default)]
     Unknown,
-
     /// This is used when the bittorrent logic
     /// determines to disconnect
     Bittorrent,
@@ -151,4 +149,10 @@ pub enum Operation {
 
     /// Call to ftruncate() (or SetEndOfFile() on windows)
     FileTruncate,
+}
+
+impl Operation {
+    pub unsafe fn from_u8(value: u8) -> Self {
+        unsafe { std::mem::transmute(value) }
+    }
 }

@@ -1,8 +1,12 @@
+pub mod add_torrent;
 pub mod file_completed;
 pub mod file_rename_failed;
 pub mod file_renamed;
 pub mod performance;
 pub mod read_piece;
+pub mod save_resume_data;
+pub mod save_resume_data_failed;
 pub mod state_changed;
+pub mod state_update;
 pub mod torrent_removed;
 pub mod tracker_error;

@@ -53,8 +53,8 @@ lt_parse_magnet_uri(rust::Str magnet_uri) {
 
 std::unique_ptr<lt::torrent_handle>
 lt_session_add_torrent(lt::session &session,
-                       const lt::add_torrent_params &params) {
-  lt::torrent_handle handle = session.add_torrent(params);
+                       lt::add_torrent_params *params) {
+  lt::torrent_handle handle = session.add_torrent(*params);
   return std::make_unique<lt::torrent_handle>(std::move(handle));
 }
 
@@ -63,8 +63,8 @@ void lt_session_post_torrent_updates(lt::session &session, uint32_t flags) {
 }
 
 void lt_session_async_add_torrent(lt::session &session,
-                                  const lt::add_torrent_params &params) {
-  session.async_add_torrent(params);
+                                  lt::add_torrent_params *params) {
+  session.async_add_torrent(*params);
 }
 
 AlertType map_alert_type(int type) {
@@ -300,21 +300,21 @@ rust::Vec<CastAlertRaw> lt_session_pop_alerts(lt::session &ses) {
 // ║                            Add Torrent Params                             ║
 // ╚===========================================================================╝
 
-void lt_set_add_torrent_params_path(lt::add_torrent_params &params,
+void lt_set_add_torrent_params_path(lt::add_torrent_params *params,
                                     rust::Str path) {
   std::string path_str(path);
-  params.save_path = path_str;
+  params->save_path = path_str;
 }
 
 InfoHashCpp
-lt_add_torrent_params_info_hash(const lt::add_torrent_params &params) {
-  const auto hash = params.info_hashes;
+lt_add_torrent_params_info_hash(lt::add_torrent_params *params) {
+  const auto hash = params->info_hashes;
   return info_hash_t_to_info_hash_cpp(hash);
 }
 
 rust::Vec<uint8_t>
-lt_write_resume_data_buf(const lt::add_torrent_params &params) {
-  auto buf = lt::write_resume_data_buf(params);
+lt_write_resume_data_buf(lt::add_torrent_params *params) {
+  auto buf = lt::write_resume_data_buf(*params);
   rust::Vec<uint8_t> buf_rust;
 
   buf_rust.reserve(buf.size());
@@ -387,16 +387,16 @@ void lt_torrent_handle_read_piece(const lt::torrent_handle &handle, int piece) {
 // ╚===========================================================================╝
 
 std::unique_ptr<lt::torrent_handle>
-lt_torrent_status_handle(const lt::torrent_status &status) {
-  return std::make_unique<lt::torrent_handle>(status.handle);
+lt_torrent_status_handle(lt::torrent_status *status) {
+  return std::make_unique<lt::torrent_handle>(status->handle);
 }
 
-uint8_t lt_torrent_status_state(const lt::torrent_status &status) {
-  return status.state;
+uint8_t lt_torrent_status_state(lt::torrent_status *status) {
+  return status->state;
 }
 
-double lt_torrent_status_progress(const lt::torrent_status &status) {
-  return status.progress;
+double lt_torrent_status_progress(lt::torrent_status *status) {
+  return status->progress;
 }
 
 // ╔===========================================================================╗

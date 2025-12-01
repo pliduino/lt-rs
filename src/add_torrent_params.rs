@@ -1,11 +1,48 @@
-use std::fmt::Debug;
+use std::{fmt::Debug, marker::PhantomData};
 
 use cxx::UniquePtr;
 
 use crate::{ffi::ffi, info_hash::InfoHash};
 
-pub struct AddTorrentParams {
-    inner: UniquePtr<ffi::add_torrent_params>,
+// Owned type
+pub struct AddTorrentParams(UniquePtr<ffi::add_torrent_params>);
+
+pub struct AddTorrentParamsRef<'a>(*mut ffi::add_torrent_params, PhantomData<&'a ()>);
+
+impl<'a> From<*mut ffi::add_torrent_params> for AddTorrentParamsRef<'a> {
+    fn from(ptr: *mut ffi::add_torrent_params) -> AddTorrentParamsRef<'a> {
+        AddTorrentParamsRef(ptr, PhantomData)
+    }
+}
+
+mod private {
+    pub trait Sealed {}
+
+    impl Sealed for super::AddTorrentParams {}
+    impl Sealed for &super::AddTorrentParams {}
+    impl Sealed for super::AddTorrentParamsRef<'_> {}
+}
+
+pub trait AddTorrentParamsIntoPtr: private::Sealed {
+    fn as_ptr(&self) -> *mut ffi::add_torrent_params;
+}
+
+impl AddTorrentParamsIntoPtr for AddTorrentParams {
+    fn as_ptr(&self) -> *mut ffi::add_torrent_params {
+        self.0.as_mut_ptr()
+    }
+}
+
+impl AddTorrentParamsIntoPtr for &AddTorrentParams {
+    fn as_ptr(&self) -> *mut ffi::add_torrent_params {
+        self.0.as_mut_ptr()
+    }
+}
+
+impl AddTorrentParamsIntoPtr for AddTorrentParamsRef<'_> {
+    fn as_ptr(&self) -> *mut ffi::add_torrent_params {
+        self.0
+    }
 }
 
 impl Debug for AddTorrentParams {
@@ -14,39 +51,57 @@ impl Debug for AddTorrentParams {
     }
 }
 
+impl<'a> Debug for AddTorrentParamsRef<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("AddTorrentParamsRef").finish()
+    }
+}
+
 impl AddTorrentParams {
-    pub(super) fn inner(&self) -> &ffi::add_torrent_params {
-        &self.inner
-    }
-
     pub fn parse_magnet_uri(magnet_uri: &str) -> AddTorrentParams {
-        AddTorrentParams {
-            inner: ffi::lt_parse_magnet_uri(magnet_uri),
-        }
-    }
-
-    pub fn set_path(&mut self, path: &str) {
-        ffi::lt_set_add_torrent_params_path(self.inner.pin_mut(), path);
-    }
-
-    pub fn get_info_hash(&self) -> InfoHash {
-        ffi::lt_add_torrent_params_info_hash(&self.inner).into()
-    }
-
-    pub fn write_resume_data_buf(&self) -> Vec<u8> {
-        ffi::lt_write_resume_data_buf(&self.inner)
+        AddTorrentParams(ffi::lt_parse_magnet_uri(magnet_uri))
     }
 
     pub fn load_resume_data(buf: &[u8]) -> AddTorrentParams {
-        AddTorrentParams {
-            inner: ffi::lt_read_resume_data(buf),
-        }
+        AddTorrentParams(unsafe { ffi::lt_read_resume_data(buf) })
+    }
+}
+
+impl AddTorrentParams {
+    pub fn set_path(&mut self, path: &str) {
+        unsafe { ffi::lt_set_add_torrent_params_path(self.0.as_mut_ptr(), path) };
+    }
+
+    pub fn get_info_hash(&self) -> InfoHash {
+        unsafe { ffi::lt_add_torrent_params_info_hash(self.0.as_mut_ptr()).into() }
+    }
+
+    pub fn write_resume_data_buf(&self) -> Vec<u8> {
+        unsafe { ffi::lt_write_resume_data_buf(self.0.as_mut_ptr()) }
+    }
+}
+
+impl<'a> AddTorrentParamsRef<'a> {
+    pub fn make_owned(self) -> AddTorrentParams {
+        unimplemented!()
+    }
+
+    pub fn set_path(&mut self, path: &str) {
+        unsafe { ffi::lt_set_add_torrent_params_path(self.0, path) };
+    }
+
+    pub fn get_info_hash(&self) -> InfoHash {
+        unsafe { ffi::lt_add_torrent_params_info_hash(self.0).into() }
+    }
+
+    pub fn write_resume_data_buf(&self) -> Vec<u8> {
+        unsafe { ffi::lt_write_resume_data_buf(self.0) }
     }
 }
 
 impl From<UniquePtr<ffi::add_torrent_params>> for AddTorrentParams {
     fn from(inner: UniquePtr<ffi::add_torrent_params>) -> AddTorrentParams {
-        AddTorrentParams { inner }
+        AddTorrentParams(inner)
     }
 }
 

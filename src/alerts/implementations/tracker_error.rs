@@ -44,11 +44,25 @@ impl TrackerErrorAlert {
     }
 
     pub fn op(&self) -> Operation {
-        unsafe { tracker_error_alert_get_op(self.0) }.into()
+        let op = unsafe { tracker_error_alert_get_op(self.0) };
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "safe_enums")] {
+                op.into()
+            } else {
+                unsafe { Operation::from_u8(op) }
+            }
+        }
     }
 
     /// The bittorrent protocol version that was announced
     pub fn version(&self) -> ProtocolVersion {
-        unsafe { tracker_error_alert_get_version(self.0) }.into()
+        let version = unsafe { tracker_error_alert_get_version(self.0) };
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "safe_enums")] {
+                version.into()
+            } else {
+                unsafe { std::mem::transmute(version) }
+            }
+        }
     }
 }

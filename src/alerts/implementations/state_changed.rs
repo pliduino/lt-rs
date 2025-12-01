@@ -25,15 +25,6 @@ impl StateChangedValues {
         self.prev_state
     }
 }
-impl<'a> From<TorrentHandle> for StateChangedValues {
-    fn from(torrent_handle: TorrentHandle) -> Self {
-        Self {
-            torrent_handle,
-            state: TorrentState::Unknown,
-            prev_state: TorrentState::Unknown,
-        }
-    }
-}
 
 impl StateChangedAlert {
     pub fn handle(&self) -> TorrentHandle {
@@ -48,11 +39,26 @@ impl StateChangedAlert {
         self.as_torrent_alert().message()
     }
 
+    #[inline(always)]
     pub fn state(&self) -> TorrentState {
-        unsafe { state_changed_alert_get_state(self.0) }.into()
+        let state = unsafe { state_changed_alert_get_state(self.0) };
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "safe_enums")] {
+                state.into()
+            } else {
+                unsafe { std::mem::transmute(state) }
+            }
+        }
     }
 
     pub fn prev_state(&self) -> TorrentState {
-        unsafe { state_changed_alert_get_prev_state(self.0) }.into()
+        let prev_state = unsafe { state_changed_alert_get_prev_state(self.0) };
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "safe_enums")] {
+                prev_state.into()
+            } else {
+                unsafe { std::mem::transmute(prev_state) }
+            }
+        }
     }
 }

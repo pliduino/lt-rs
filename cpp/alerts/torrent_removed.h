@@ -5,6 +5,6 @@
 
 namespace ltrs {
 
-class InfoHashCpp;
+    struct InfoHashCpp;
     InfoHashCpp torrent_removed_alert_get_info_hashes(lt::torrent_removed_alert* a);
 }

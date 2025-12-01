@@ -157,7 +157,6 @@ type TcpEndpoint = String;
 type PeerId = String;
 type UserData = String;
 
-pub type ErrorCode = i32;
 pub type PieceIndex = i32;
 
 /// Struct to hold information about a single DHT routing table bucket

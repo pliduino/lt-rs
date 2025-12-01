@@ -3,7 +3,7 @@ use std::mem;
 use cxx::UniquePtr;
 
 use crate::{
-    add_torrent_params::AddTorrentParams,
+    add_torrent_params::{AddTorrentParamsIntoPtr, AddTorrentParamsRef},
     alerts::Alert,
     ffi::ffi,
     settings_pack::SettingsPack,
@@ -30,13 +30,13 @@ impl LtSession {
         }
     }
 
-    pub fn add_torrent<'a>(&'a mut self, _params: &AddTorrentParams) -> TorrentHandle {
+    pub fn add_torrent<'a>(&'a mut self, _params: &AddTorrentParamsRef) -> TorrentHandle {
         unimplemented!()
         // ffi::lt_session_add_torrent(self.inner.pin_mut(), params.inner()).into()
     }
 
-    pub fn async_add_torrent(&mut self, params: &AddTorrentParams) {
-        ffi::lt_session_async_add_torrent(self.inner.pin_mut(), params.inner());
+    pub fn async_add_torrent<T: AddTorrentParamsIntoPtr>(&mut self, params: &T) {
+        unsafe { ffi::lt_session_async_add_torrent(self.inner.pin_mut(), params.as_ptr()) };
     }
 
     pub fn pop_alerts(&mut self) {

@@ -8,7 +8,7 @@ use crate::ffi::torrent_handle::ffi::{
 use crate::info_hash::InfoHash;
 use crate::torrent_status::TorrentStatus;
 
-/// Torrent handles are cheap to clone so they're fully owned
+// Torrent handles are just a weak pointer so we can just clone them from C++.
 pub struct TorrentHandle(UniquePtr<torrent_handle>);
 
 impl TorrentHandle {

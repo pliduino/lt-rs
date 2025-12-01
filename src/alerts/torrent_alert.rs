@@ -34,7 +34,7 @@ impl<'a> TorrentAlertRaw<'a> {
     pub(crate) fn torrent_name(&self) -> &'a str {
         unsafe { torrent_alert_torrent_name::<'a>(self.0) }
     }
-    pub(crate) fn handle(&self) -> TorrentHandle {
+    pub fn handle(&self) -> TorrentHandle {
         TorrentHandle::from_inner(unsafe { torrent_alert_handle(self.0) })
     }
 }
