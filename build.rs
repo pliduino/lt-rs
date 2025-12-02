@@ -8,15 +8,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR")?;
 
-    #[cfg(feature = "static-boost")]
-    let boost_dir = PathBuf::from(manifest_dir.clone() + "/vendor/boost");
+    // #[cfg(feature = "static-boost")]
+    // let boost_dir = PathBuf::from(manifest_dir.clone() + "/vendor/boost");
     #[cfg(feature = "static-libtorrent")]
     let libtorrent_dir = PathBuf::from(manifest_dir.clone() + "/vendor/libtorrent");
 
     let include_dir = PathBuf::from(manifest_dir.clone() + "/include");
 
-    #[cfg(feature = "static-boost")]
-    let boost_build = out_dir.join("boost-build");
+    // #[cfg(feature = "static-boost")]
+    // let boost_build = out_dir.join("boost-build");
     #[cfg(feature = "static-libtorrent")]
     let libtorrent_build = out_dir.join("libtorrent-build");
 
@@ -25,50 +25,50 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(feature = "static-libtorrent")]
     let libtorrent_lib_dir = libtorrent_build.join("lib");
 
-    #[cfg(feature = "static-boost")]
-    if !std::fs::exists(&boost_build)? {
-        std::fs::create_dir_all(&boost_build).unwrap();
+    // #[cfg(feature = "static-boost")]
+    // if !std::fs::exists(&boost_build)? {
+    //     std::fs::create_dir_all(&boost_build).unwrap();
 
-        println!("cargo:warning=Building Boost (static)...");
+    //     println!("cargo:warning=Building Boost (static)...");
 
-        // bootstrap
-        let bootstrap = if cfg!(windows) {
-            "bootstrap.bat"
-        } else {
-            "./bootstrap.sh"
-        };
+    //     // bootstrap
+    //     let bootstrap = if cfg!(windows) {
+    //         "bootstrap.bat"
+    //     } else {
+    //         "./bootstrap.sh"
+    //     };
 
-        let status = Command::new(bootstrap)
-            .current_dir(&boost_dir)
-            .status()
-            .expect("Failed to bootstrap Boost");
-        assert!(status.success());
+    //     let status = Command::new(bootstrap)
+    //         .current_dir(&boost_dir)
+    //         .status()
+    //         .expect("Failed to bootstrap Boost");
+    //     assert!(status.success());
 
-        // b2 build
-        let mut b2 = Command::new("./b2");
-        b2.current_dir(&boost_dir).args([
-            "link=static",
-            "threading=multi",
-            "cxxflags=\"-std=c++20\"",
-            "runtime-link=static",
-            "variant=release",
-            "--with-system",
-            "--with-asio",
-            "--with-filesystem",
-            "--with-chrono",
-            "--with-random",
-            "--with-date_time",
-            "--with-thread",
-            &format!("--build-dir={}", boost_build.display()),
-            &format!("--stagedir={}", boost_build.display()),
-        ]);
+    //     // b2 build
+    //     let mut b2 = Command::new("./b2");
+    //     b2.current_dir(&boost_dir).args([
+    //         "link=static",
+    //         "threading=multi",
+    //         "cxxflags=\"-std=c++20\"",
+    //         "runtime-link=static",
+    //         "variant=release",
+    //         "--with-system",
+    //         "--with-asio",
+    //         "--with-filesystem",
+    //         "--with-chrono",
+    //         "--with-random",
+    //         "--with-date_time",
+    //         "--with-thread",
+    //         &format!("--build-dir={}", boost_build.display()),
+    //         &format!("--stagedir={}", boost_build.display()),
+    //     ]);
 
-        let status = b2.status().expect("Failed to build Boost");
-        assert!(status.success(), "Boost build failed");
-    }
+    //     let status = b2.status().expect("Failed to build Boost");
+    //     assert!(status.success(), "Boost build failed");
+    // }
 
-    #[cfg(feature = "static-boost")]
-    println!("cargo:rustc-link-search=native={}", boost_lib_dir.display());
+    // #[cfg(feature = "static-boost")]
+    // println!("cargo:rustc-link-search=native={}", boost_lib_dir.display());
 
     #[cfg(feature = "static-libtorrent")]
     if !std::fs::exists(&libtorrent_build)? {
