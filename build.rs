@@ -5,6 +5,12 @@ use std::{
 };
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    if std::env::var("DOCS_RS").is_ok() {
+        return Ok(());
+    }
+
+    return Ok(());
+
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR")?;
 
