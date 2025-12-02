@@ -1,7 +1,6 @@
-use num_enum::FromPrimitive;
-
 use crate::ffi::error::ffi::{self};
 
+#[derive(Debug)]
 pub enum LtrsError {
     LibtorrentError(LibtorrentError),
     HttpError(HttpError),
@@ -11,13 +10,47 @@ pub enum LtrsError {
     BdecodeError(BdecodeError),
     SocksError(SocksError),
     UpnpError(UpnpError),
-
-    /// If error category is not known
+    // If error category is not known
+    // This is enable even without safe_enums feature because we need to check
+    // libtorrent to see if we already covered all possible variants
     Unknown(i32),
 }
 
-#[derive(Debug, FromPrimitive)]
-#[repr(i32)]
+impl LtrsError {
+    pub fn is_ok(&self) -> bool {
+        match self {
+            LtrsError::LibtorrentError(e) => {
+                matches!(e, LibtorrentError::NoError)
+            }
+            LtrsError::HttpError(e) => {
+                matches!(e, HttpError::Ok)
+            }
+            LtrsError::GzipError(e) => {
+                matches!(e, GzipError::NoError)
+            }
+            LtrsError::I2pError(e) => {
+                matches!(e, I2pError::NoError)
+            }
+            LtrsError::PcpError(e) => {
+                matches!(e, PcpError::Success)
+            }
+            LtrsError::BdecodeError(e) => {
+                matches!(e, BdecodeError::NoError)
+            }
+            LtrsError::SocksError(e) => {
+                matches!(e, SocksError::NoError)
+            }
+            LtrsError::UpnpError(e) => {
+                matches!(e, UpnpError::NoError)
+            }
+            LtrsError::Unknown(e) => *e == 0,
+        }
+    }
+}
+
+#[derive(Debug)]
+#[cfg_attr(feature = "safe_enums", derive(num_enum::FromPrimitive))]
+#[repr(u8)]
 pub enum LibtorrentError {
     /// Not an error
     NoError = 0,
@@ -222,7 +255,7 @@ pub enum LibtorrentError {
     /// URL
     Redirecting,
     /// The HTTP range header is invalid
-    InvalidRange,
+    InvalidRangeLtrsError,
     /// The HTTP response did not have a content length
     NoContentLength,
     /// The IP is blocked by the IP filter
@@ -299,21 +332,21 @@ pub enum LibtorrentError {
     /// these error codes are deprecated, NAT-PMP/PCP error codes have
     /// been moved to their own category
 
-    /// The NAT-PMP router responded with an unsupported protocol version
-    #[deprecated]
-    UnsupportedProtocolVersion = 120,
-    /// You are not authorized to map ports on this NAT-PMP router
-    #[deprecated]
-    NatpmpNotAuthorized,
-    /// The NAT-PMP router failed because of a network failure
-    #[deprecated]
-    NetworkFailure,
-    /// The NAT-PMP router failed because of lack of resources
-    #[deprecated]
-    NoResources,
-    /// The NAT-PMP router failed because an unsupported opcode was sent
-    #[deprecated]
-    UnsupportedOpcode,
+    // /// The NAT-PMP router responded with an unsupported protocol version
+    // #[deprecated]
+    // UnsupportedProtocolVersion = 120,
+    // /// You are not authorized to map ports on this NAT-PMP router
+    // #[deprecated]
+    // NatpmpNotAuthorized,
+    // /// The NAT-PMP router failed because of a network failure
+    // #[deprecated]
+    // NetworkFailure,
+    // /// The NAT-PMP router failed because of lack of resources
+    // #[deprecated]
+    // NoResources,
+    // /// The NAT-PMP router failed because an unsupported opcode was sent
+    // #[deprecated]
+    // UnsupportedOpcode,
 
     /// The resume data file is missing the ``file sizes`` entry
     MissingFileSizes = 130,
@@ -395,26 +428,26 @@ pub enum LibtorrentError {
     AnnounceSkipped,
 
     /// expected string in bencoded string
-    #[deprecated]
-    ExpectedString190,
-    /// expected colon in bencoded string
-    #[deprecated]
-    ExpectedColon,
-    /// unexpected end of file in bencoded string
-    #[deprecated]
-    UnexpectedEof,
-    /// expected value (list, dict, int or string) in bencoded string
-    #[deprecated]
-    ExpectedValue,
-    /// bencoded recursion depth limit exceeded
-    #[deprecated]
-    DepthExceeded,
-    /// bencoded item count limit exceeded
-    #[deprecated]
-    LimitExceeded,
-    /// integer overflow
-    #[deprecated]
-    Overflow,
+    // #[deprecated]
+    // ExpectedString190,
+    // /// expected colon in bencoded string
+    // #[deprecated]
+    // ExpectedColon,
+    // /// unexpected end of file in bencoded string
+    // #[deprecated]
+    // UnexpectedEof,
+    // /// expected value (list, dict, int or string) in bencoded string
+    // #[deprecated]
+    // ExpectedValue,
+    // /// bencoded recursion depth limit exceeded
+    // #[deprecated]
+    // DepthExceeded,
+    // /// bencoded item count limit exceeded
+    // #[deprecated]
+    // LimitExceeded,
+    // /// integer overflow
+    // #[deprecated]
+    // Overflow,
 
     /// random number generation failed
     NoEntropy = 200,
@@ -441,19 +474,17 @@ pub enum LibtorrentError {
     TorrentInconsistentHashes,
     /// a file in the v2 metadata has the pad attribute set
     TorrentInvalidPadFile,
-
-    /// the number of error codes
-    // ErrorCodeMax,
-
-    //// The value is not used by libtorrent itself, it is only used
-    //// internally to match againt C++ integers and prevent crashes
-    //// as otherwise we would need a unreachable!() in the match arms.
+    /// The value is not used by libtorrent itself, it is only used
+    /// internally to match againt C++ integers and prevent crashes
+    /// as otherwise we would need a unreachable!() in the match arms.
+    #[cfg(feature = "safe_enums")]
     #[num_enum(default)]
     UnknownErrorCode,
 }
 
-#[derive(Debug, FromPrimitive)]
-#[repr(i32)]
+#[derive(Debug)]
+#[cfg_attr(feature = "safe_enums", derive(num_enum::FromPrimitive))]
+#[repr(u16)]
 pub enum HttpError {
     Cont = 100,
     Ok = 200,
@@ -472,12 +503,14 @@ pub enum HttpError {
     NotImplemented = 501,
     BadGateway = 502,
     ServiceUnavailable = 503,
+    #[cfg(feature = "safe_enums")]
     #[num_enum(default)]
     UnknownErrorCode,
 }
 
-#[derive(Debug, FromPrimitive)]
-#[repr(i32)]
+#[derive(Debug)]
+#[cfg_attr(feature = "safe_enums", derive(num_enum::FromPrimitive))]
+#[repr(u8)]
 pub enum I2pError {
     NoError = 0,
     ParseFailed,
@@ -488,12 +521,14 @@ pub enum I2pError {
     Timeout,
     KeyNotFound,
     DuplicatedId,
+    #[cfg(feature = "safe_enums")]
     #[num_enum(default)]
     UnknownErrorCode,
 }
 
-#[derive(Debug, FromPrimitive)]
-#[repr(i32)]
+#[derive(Debug)]
+#[cfg_attr(feature = "safe_enums", derive(num_enum::FromPrimitive))]
+#[repr(u8)]
 pub enum GzipError {
     NoError = 0,
     InvalidGzipHeader,
@@ -511,12 +546,14 @@ pub enum GzipError {
     InvalidLiteralCodeInBlock,
     DistanceTooFarBackInBlock,
     UnknownGzipError,
+    #[cfg(feature = "safe_enums")]
     #[num_enum(default)]
     UnknownErrorCode,
 }
 
-#[derive(Debug, FromPrimitive)]
-#[repr(i32)]
+#[derive(Debug)]
+#[cfg_attr(feature = "safe_enums", derive(num_enum::FromPrimitive))]
+#[repr(u8)]
 pub enum PcpError {
     Success = 0,
     UnsupportedVersion,
@@ -532,12 +569,14 @@ pub enum PcpError {
     CannotProvideExternal,
     AddressMismatch,
     ExcessiveRemotePeers,
+    #[cfg(feature = "safe_enums")]
     #[num_enum(default)]
     UnknownErrorCode,
 }
 
-#[derive(Debug, FromPrimitive)]
-#[repr(i32)]
+#[derive(Debug)]
+#[cfg_attr(feature = "safe_enums", derive(num_enum::FromPrimitive))]
+#[repr(u8)]
 pub enum BdecodeError {
     NoError = 0,
     ExpectedDigit,
@@ -547,12 +586,14 @@ pub enum BdecodeError {
     DepthExceeded,
     LimitExceeded,
     Overflow,
+    #[cfg(feature = "safe_enums")]
     #[num_enum(default)]
     UnknownErrorCode,
 }
 
-#[derive(Debug, FromPrimitive)]
-#[repr(i32)]
+#[derive(Debug)]
+#[cfg_attr(feature = "safe_enums", derive(num_enum::FromPrimitive))]
+#[repr(u8)]
 pub enum SocksError {
     NoError = 0,
     UnsupportedVersion,
@@ -564,12 +605,14 @@ pub enum SocksError {
     CommandNotSupported,
     NoIdentd,
     IdentdError,
+    #[cfg(feature = "safe_enums")]
     #[num_enum(default)]
-    ErrorCodeMax,
+    UnknownErrorCode,
 }
 
-#[derive(Debug, FromPrimitive)]
-#[repr(i32)]
+#[derive(Debug)]
+#[cfg_attr(feature = "safe_enums", derive(num_enum::FromPrimitive))]
+#[repr(u16)]
 pub enum UpnpError {
     NoError = 0,
     InvalidArgument = 402,
@@ -582,22 +625,74 @@ pub enum UpnpError {
     OnlyPermanentLeasesSupported = 725,
     RemoteHostMustBeWildcarded = 726,
     ExternalPortMustBeWildcarded = 727,
+    #[cfg(feature = "safe_enums")]
     #[num_enum(default)]
     UnknownErrorCode,
 }
 
 impl From<ffi::Error> for LtrsError {
     fn from(err: ffi::Error) -> Self {
-        match err.category {
-            ffi::ErrorCategory::LibtorrentError => LtrsError::LibtorrentError(err.code.into()),
-            ffi::ErrorCategory::HttpError => LtrsError::HttpError(err.code.into()),
-            ffi::ErrorCategory::GzipError => LtrsError::GzipError(err.code.into()),
-            ffi::ErrorCategory::PcpError => LtrsError::PcpError(err.code.into()),
-            ffi::ErrorCategory::BdecodeError => LtrsError::BdecodeError(err.code.into()),
-            ffi::ErrorCategory::SocksError => LtrsError::SocksError(err.code.into()),
-            ffi::ErrorCategory::UpnpError => LtrsError::UpnpError(err.code.into()),
-            ffi::ErrorCategory::I2pError => LtrsError::I2pError(err.code.into()),
-            _ => LtrsError::Unknown(err.code),
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "safe_enums")] {
+                match err.category {
+                    ffi::ErrorCategory::LibtorrentError => {
+                        LtrsError::LibtorrentError(err.code.into())
+                    }
+                    ffi::ErrorCategory::HttpError => {
+                        LtrsError::HttpError(err.code.into())
+                    }
+                    ffi::ErrorCategory::GzipError => {
+                        LtrsError::GzipError(err.code.into())
+                    }
+                    ffi::ErrorCategory::PcpError => {
+                        LtrsError::PcpError(err.code.into())
+                    }
+                    ffi::ErrorCategory::BdecodeError => {
+                        LtrsError::BdecodeError(err.code.into())
+                    }
+                    ffi::ErrorCategory::SocksError => {
+                        LtrsError::SocksError(err.code.into())
+                    }
+                    ffi::ErrorCategory::UpnpError => {
+                        LtrsError::UpnpError(err.codee.into())
+                    }
+                    ffi::ErrorCategory::I2pError => {
+                        LtrsError::I2pError(err.code.into())
+                    }
+                    _ => LtrsError::Unknown(err.code),
+                }
+            } else {
+                // SAFETY: We trust that libtorrent will not return invalid error codes
+                unsafe {
+                    match err.category {
+                        ffi::ErrorCategory::LibtorrentError => {
+                            LtrsError::LibtorrentError(std::mem::transmute(err.code as u8))
+                        }
+                        ffi::ErrorCategory::HttpError => {
+                            LtrsError::HttpError(std::mem::transmute(err.code as u16))
+                        }
+                        ffi::ErrorCategory::GzipError => {
+                            LtrsError::GzipError(std::mem::transmute(err.code as u8))
+                        }
+                        ffi::ErrorCategory::PcpError => {
+                            LtrsError::PcpError(std::mem::transmute(err.code as u8))
+                        }
+                        ffi::ErrorCategory::BdecodeError => {
+                            LtrsError::BdecodeError(std::mem::transmute(err.code as u8))
+                        }
+                        ffi::ErrorCategory::SocksError => {
+                            LtrsError::SocksError(std::mem::transmute(err.code as u8))
+                        }
+                        ffi::ErrorCategory::UpnpError => {
+                            LtrsError::UpnpError(std::mem::transmute(err.code as u16))
+                        }
+                        ffi::ErrorCategory::I2pError => {
+                            LtrsError::I2pError(std::mem::transmute(err.code as u8))
+                        }
+                        _ => LtrsError::Unknown(err.code),
+                    }
+                }
+            }
         }
     }
 }

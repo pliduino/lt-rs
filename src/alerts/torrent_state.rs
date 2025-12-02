@@ -1,9 +1,8 @@
 use std::fmt::Display;
 
-use num_enum::FromPrimitive;
-
 /// The missing enums are unused enums from versions of libtorrent before 1.2
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, FromPrimitive)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(feature = "safe_enums", derive(num_enum::FromPrimitive))]
 #[repr(u8)]
 pub enum TorrentState {
     /// The torrent is in the queue for being checked. But there
@@ -43,6 +42,7 @@ pub enum TorrentState {
     /// Theoretically this state should never be reached, but
     /// just in case libtorrent adds a new state and this enum is not updated
     /// or libtorrent itself somehow reaches an invalid state.
+    #[cfg(feature = "safe_enums")]
     #[num_enum(default)]
     Unknown,
 }
