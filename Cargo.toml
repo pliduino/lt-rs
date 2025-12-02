@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2024"
 description = "Safe Libtorrent bindings for rust"
 repository = "https://github.com/pliduino/lt-rs"
+keywords = ["libtorrent", "bittorrent", "torrent"]
+categories = ["api-bindings", "network-programming"]
+readme = "README.md"
+license-file = "LICENSE"
 
 [lints.rust]
 dead_code = "allow"
@@ -22,19 +26,7 @@ num_enum = { version = "0.7.5", optional = true }
 cxx-build = "1.0.186"
 cmake = "0.1.54"
 
-# [profile.release]
-# lto = true
-# opt-level = 3
-# codegen-units = 1
-
 [features]
 default = []
 safe_enums = ["num_enum"]
 lto = []
-
-# [profile.release]
-# lto = true
-# strip = true
-# opt-level = 3
-# panic = "abort"
-# codegen-units = 1
