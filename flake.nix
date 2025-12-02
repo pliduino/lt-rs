@@ -27,6 +27,8 @@
             rustc
             rust-analyzer
             lld
+            boost
+            boost-build
           ];
 
           buildInputs = with pkgs; [
