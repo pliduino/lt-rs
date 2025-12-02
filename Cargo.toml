@@ -25,8 +25,12 @@ num_enum = { version = "0.7.5", optional = true }
 [build-dependencies]
 cxx-build = "1.0.186"
 cmake = "0.1.54"
+cfg-if = "1.0.4"
 
 [features]
-default = []
+default = ["static-libtorrent"]
 safe_enums = ["num_enum"]
 lto = []
+static-libtorrent = []
+static-boost = []
+static-ssl = []
