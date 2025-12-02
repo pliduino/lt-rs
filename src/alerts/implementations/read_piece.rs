@@ -6,7 +6,7 @@ use crate::{
 };
 
 impl ReadPieceAlert {
-    pub fn handle<'a>(&'a self) -> TorrentHandle<'a> {
+    pub fn handle(&self) -> TorrentHandle {
         self.as_torrent_alert().handle()
     }
 

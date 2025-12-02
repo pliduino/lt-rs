@@ -1,15 +1,22 @@
 pub mod alerts {
+    pub mod add_torrent;
     pub mod file_completed;
     pub mod file_rename_failed;
     pub mod file_renamed;
     pub mod performance;
     pub mod read_piece;
+    pub mod save_resume_data;
+    pub mod save_resume_data_failed;
     pub mod state_changed;
+    pub mod state_update;
     pub mod torrent_alert;
     pub mod torrent_removed;
+    pub mod tracker_alert;
+    pub mod tracker_error;
 }
 
 pub mod error;
+pub mod torrent_handle;
 
 #[cxx::bridge(namespace = "ltrs")]
 pub(crate) mod ffi {
@@ -129,10 +136,10 @@ pub(crate) mod ffi {
 
     #[namespace = "libtorrent"]
     extern "C++" {
+        type torrent_handle = crate::ffi::torrent_handle::ffi::torrent_handle;
         type session;
         type add_torrent_params;
         type settings_pack;
-        type torrent_handle;
         type torrent_status;
         type alert;
         type torrent_alert;
@@ -236,6 +243,21 @@ pub(crate) mod ffi {
         type piece_info_alert;
         type piece_availability_alert;
         type tracker_list_alert;
+
+        type torrent_info;
+    }
+
+    impl UniquePtr<torrent_status> {}
+    impl CxxVector<torrent_status> {}
+
+    struct AddTorrentParamsValues {
+        version: i32,
+        ti: SharedPtr<torrent_info>,
+        name: String,
+        trackers: Vec<String>,
+        tracker_tiers: Vec<i32>,
+        // dht_nodes: Vec<i32>,
+        save_path: String,
     }
 
     unsafe extern "C++" {
@@ -249,11 +271,14 @@ pub(crate) mod ffi {
 
         fn lt_create_session() -> UniquePtr<session>;
         fn lt_create_session_with_settings(settings: &settings_pack) -> UniquePtr<session>;
-        fn lt_session_add_torrent(
+        unsafe fn lt_session_add_torrent(
             session: Pin<&mut session>,
-            params: &add_torrent_params,
+            params: *mut add_torrent_params,
         ) -> UniquePtr<torrent_handle>;
-        fn lt_session_async_add_torrent(session: Pin<&mut session>, params: &add_torrent_params);
+        unsafe fn lt_session_async_add_torrent(
+            session: Pin<&mut session>,
+            params: *mut add_torrent_params,
+        );
         fn lt_session_pop_alerts(session: Pin<&mut session>) -> Vec<CastAlertRaw>;
         fn lt_session_post_torrent_updates(session: Pin<&mut session>, flags: u32);
 
@@ -268,29 +293,24 @@ pub(crate) mod ffi {
         // ║                            Add Torrent Params                             ║
         // ╚===========================================================================╝
 
-        fn lt_set_add_torrent_params_path(params: Pin<&mut add_torrent_params>, path: &str);
-        fn lt_add_torrent_params_info_hash(params: &add_torrent_params) -> InfoHashCpp;
-        fn lt_write_resume_data_buf(params: &add_torrent_params) -> Vec<u8>;
-        fn lt_read_resume_data(buf: &[u8]) -> UniquePtr<add_torrent_params>;
+        unsafe fn lt_set_add_torrent_params_path(params: *mut add_torrent_params, path: &str);
+        unsafe fn lt_add_torrent_params_info_hash(params: *mut add_torrent_params) -> InfoHashCpp;
+        unsafe fn lt_write_resume_data_buf(params: *mut add_torrent_params) -> Vec<u8>;
+        unsafe fn lt_read_resume_data(buf: &[u8]) -> UniquePtr<add_torrent_params>;
 
         // ╔===========================================================================╗
         // ║                              Torrent Handle                               ║
         // ╚===========================================================================╝
 
-        fn lt_torrent_handle_in_session(handle: &torrent_handle) -> bool;
-        fn lt_torrent_handle_read_piece(handle: &torrent_handle, piece: i32);
-        fn lt_torrent_handle_status(handle: &torrent_handle) -> UniquePtr<torrent_status>;
-        fn lt_torrent_handle_save_resume_data(handle: &torrent_handle, flags: u8);
-
-        fn lt_torrent_handle_info_hash(handle: &torrent_handle) -> InfoHashCpp;
-
         // ╔===========================================================================╗
         // ║                              Torrent Status                               ║
         // ╚===========================================================================╝
 
-        fn lt_torrent_status_handle(status: &torrent_status) -> UniquePtr<torrent_handle>;
-        fn lt_torrent_status_state(status: &torrent_status) -> u8;
-        fn lt_torrent_status_progress(status: &torrent_status) -> f64;
+        unsafe fn lt_torrent_status_handle(
+            status: *mut torrent_status,
+        ) -> UniquePtr<torrent_handle>;
+        unsafe fn lt_torrent_status_state(status: *mut torrent_status) -> u8;
+        unsafe fn lt_torrent_status_progress(status: *mut torrent_status) -> f64;
 
         // ╔===========================================================================╗
         // ║                                  Alerts                                   ║

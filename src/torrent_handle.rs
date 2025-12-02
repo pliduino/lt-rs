@@ -1,27 +1,26 @@
+use cxx::UniquePtr;
+
 use crate::alerts::PieceIndex;
-use crate::ffi::ffi;
+use crate::ffi::torrent_handle::ffi::{
+    torrent_handle, torrent_handle_in_session, torrent_handle_info_hashes,
+    torrent_handle_read_piece, torrent_handle_save_resume_data,
+};
 use crate::info_hash::InfoHash;
 use crate::torrent_status::TorrentStatus;
 
-pub struct TorrentHandle<'a> {
-    inner: *mut ffi::torrent_handle,
-    _marker: std::marker::PhantomData<&'a ()>,
-}
+// Torrent handles are just a weak pointer so we can just clone them from C++.
+pub struct TorrentHandle(UniquePtr<torrent_handle>);
 
-impl<'a> TorrentHandle<'a> {
-    pub(crate) fn from_inner(inner: *mut ffi::torrent_handle) -> TorrentHandle<'a> {
-        TorrentHandle {
-            inner: inner,
-            _marker: std::marker::PhantomData,
-        }
+impl TorrentHandle {
+    pub(crate) fn from_inner(inner: UniquePtr<torrent_handle>) -> TorrentHandle {
+        TorrentHandle(inner)
     }
 
     /// Returns true if the torrent is in the session. It returns true before session::remove_torrent() is called, and false afterward.
     /// ### Note
     /// This is a blocking function, unlike [`TorrentHandle::is_valid()`] which returns immediately.
     pub fn in_session(&self) -> bool {
-        // ffi::lt_torrent_handle_in_session(self.inner)
-        unimplemented!()
+        torrent_handle_in_session(&self.0)
     }
 
     /// [`TorrentHandle::save_resume_data()`] asks libtorrent to generate fast-resume data for
@@ -120,9 +119,8 @@ impl<'a> TorrentHandle<'a> {
     ///	the alert, but it has not been received yet. Those torrents would
     ///	report that they don't need to save resume data again, and skipped by
     ///	the initial loop, and thwart the counter otherwise.
-    pub fn save_resume_data(&self, _flags: ResumeDataFlags) {
-        // ffi::lt_torrent_handle_save_resume_data(&self.inner, flags.bits());
-        unimplemented!()
+    pub fn save_resume_data(&self, flags: ResumeDataFlags) {
+        torrent_handle_save_resume_data(&self.0, flags.bits());
     }
 
     /// This function starts an asynchronous read operation of the specified piece from this torrent.
@@ -131,27 +129,28 @@ impl<'a> TorrentHandle<'a> {
     /// When the read operation is completed, it is passed back through an alert, [`TorrentAlert::ReadPiece`].
     /// Since this alert is a response to an explicit call, it will always be posted, regardless of the alert mask.
     ///
-    /// Note that if you read multiple pieces, the read operations are not guaranteed to finish in the same order as you initiated them.
-    fn read_piece(&self, _piece: PieceIndex) {
-        unimplemented!();
-        //ffi::lt_torrent_handle_read_piece(&self.inner, piece);
+    /// ## Notes
+    /// If you read multiple pieces, the read operations are not guaranteed to finish in
+    /// the same order as you initiated them.
+    fn read_piece(&self, piece: PieceIndex) {
+        torrent_handle_read_piece(&self.0, piece);
     }
 
-    pub fn status(&self) -> TorrentStatus<'a> {
+    pub fn status(&self) -> TorrentStatus {
+        // torrent_handle_status(self.0)
         unimplemented!()
-        //ffi::lt_torrent_handle_status(&self.inner).into()
     }
-
-    pub fn info_hash(&self) -> InfoHash {
-        unimplemented!()
-        //ffi::lt_torrent_handle_info_hash(&self.inner).into()
+    /// Returns the info-hash(es) of the torrent. If this handle is to a torrent that hasn't loaded
+    /// yet (for instance by being added) by a URL, the returned value is undefined.
+    pub fn info_hashes(&self) -> InfoHash {
+        torrent_handle_info_hashes(&self.0).into()
     }
 }
 
 // TODO: Check if this is safe
-unsafe impl<'a> Send for TorrentHandle<'a> {}
+unsafe impl<'a> Send for TorrentHandle {}
 
-impl<'a> std::fmt::Debug for TorrentHandle<'a> {
+impl<'a> std::fmt::Debug for TorrentHandle {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("TorrentHandle").finish()
     }

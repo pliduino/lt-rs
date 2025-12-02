@@ -5,7 +5,7 @@ use crate::{
         DhtReplyAlert, ScrapeFailedAlert, ScrapeReplyAlert, TrackerAnnounceAlert,
         TrackerErrorAlert, TrackerReplyAlert, TrackerWarningAlert, TrackeridAlert,
     },
-    ffi::ffi,
+    ffi::{alerts::tracker_alert::ffi::tracker_alert_get_tracker_url, ffi},
 };
 
 pub struct TrackerAlertRaw<'a>(*mut ffi::tracker_alert, PhantomData<&'a ()>);
@@ -13,6 +13,14 @@ pub struct TrackerAlertRaw<'a>(*mut ffi::tracker_alert, PhantomData<&'a ()>);
 impl<'a> TrackerAlertRaw<'a> {
     pub(crate) fn new(alert: *mut ffi::tracker_alert) -> TrackerAlertRaw<'a> {
         TrackerAlertRaw(alert, PhantomData)
+    }
+
+    pub(crate) fn tracker_url(&self) -> &'a str {
+        unsafe { tracker_alert_get_tracker_url(self.0) }
+    }
+
+    pub(crate) fn local_endpoint() {
+        unimplemented!()
     }
 }
 

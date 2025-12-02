@@ -115,8 +115,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("windows") {
         cxx.define("_WIN32_WINNT", Some("0x0A00"));
         cxx.flag_if_supported("/EHsc");
+    } else {
     }
 
+    if cfg!(feature = "lto") {
+        cxx.flag("-flto=thin");
+    }
+    cxx.compiler("clang++");
     cxx.define("TORRENT_NO_DEPRECATE", Some("1"));
 
     let cxx_src_files = find_files(Path::new("cpp"), "cpp");

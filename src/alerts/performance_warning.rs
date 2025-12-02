@@ -1,6 +1,4 @@
-use num_enum::FromPrimitive;
-
-#[derive(FromPrimitive)]
+#[cfg_attr(feature = "safe_enums", derive(num_enum::FromPrimitive))]
 #[repr(u8)]
 pub enum PerformanceWarning {
     /// This warning means that the number of bytes queued to be written to disk
@@ -82,6 +80,7 @@ pub enum PerformanceWarning {
 
     TooFewFileDescriptors,
 
+    #[cfg(feature = "safe_enums")]
     #[num_enum(default)]
     UnknownError,
 }
