@@ -5,21 +5,27 @@ use std::{
 };
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("cargo:rerun-if-changed=vendor/boost");
-    println!("cargo:rerun-if-changed=vendor/libtorrent");
-
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR")?;
 
+    #[cfg(feature = "static-boost")]
     let boost_dir = PathBuf::from(manifest_dir.clone() + "/vendor/boost");
+    #[cfg(feature = "static-libtorrent")]
     let libtorrent_dir = PathBuf::from(manifest_dir.clone() + "/vendor/libtorrent");
 
+    let include_dir = PathBuf::from(manifest_dir.clone() + "/include");
+
+    #[cfg(feature = "static-boost")]
     let boost_build = out_dir.join("boost-build");
+    #[cfg(feature = "static-libtorrent")]
     let libtorrent_build = out_dir.join("libtorrent-build");
 
+    #[cfg(feature = "static-boost")]
     let boost_lib_dir = boost_build.join("lib");
-    let libtorrent_lib_dir = libtorrent_build.join("torrent/gcc-14/release/cxxstd-20-iso/deprecated-functions-off/link-static/threading-multi/visibility-hidden");
+    #[cfg(feature = "static-libtorrent")]
+    let libtorrent_lib_dir = libtorrent_build.join("lib");
 
+    #[cfg(feature = "static-boost")]
     if !std::fs::exists(&boost_build)? {
         std::fs::create_dir_all(&boost_build).unwrap();
 
@@ -61,30 +67,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         assert!(status.success(), "Boost build failed");
     }
 
+    #[cfg(feature = "static-boost")]
     println!("cargo:rustc-link-search=native={}", boost_lib_dir.display());
-    for lib in [
-        "boost_atomic",
-        "boost_chrono",
-        "boost_container",
-        "boost_date_time",
-        "boost_exception",
-        "boost_filesystem",
-        "boost_random",
-        "boost_thread",
-    ] {
-        println!("cargo:rustc-link-lib=static={}", lib);
-    }
 
-    for lib in ["ssl", "crypto"] {
-        println!("cargo:rustc-link-lib={}", lib);
-    }
-
+    #[cfg(feature = "static-libtorrent")]
     if !std::fs::exists(&libtorrent_build)? {
-        let mut b2 = Command::new("../boost/b2");
+        let mut b2 = Command::new("b2");
         b2.current_dir(&libtorrent_dir).args([
+            &format!("--prefix={}", libtorrent_lib_dir.display()),
             "link=static",
-            "threading=multi",
-            "cxxflags=\"-std=c++20\"",
             "cxxstd=20",
             "runtime-link=static",
             "variant=release",
@@ -93,20 +84,71 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             "define=BOOST_ASIO_HEADER_ONLY",
             "define=TORRENT_NO_DEPRECATE",
             "deprecated-functions=off",
+            &format!("location={}", libtorrent_lib_dir.display()),
+            //"--layout=system",
             &format!("--build-dir={}", libtorrent_build.display()),
-            &format!("--stagedir={}", libtorrent_build.display()),
-            &format!("include={}", boost_dir.display()),
+            &format!("include={}", include_dir.display()),
         ]);
+
+        #[cfg(feature = "lto")]
+        b2.arg("lto");
 
         let status = b2.status().expect("Failed to build libtorrent");
         assert!(status.success(), "libtorrent build failed");
     }
 
+    #[cfg(feature = "static-libtorrent")]
     println!(
         "cargo:rustc-link-search=native={}",
         libtorrent_lib_dir.display()
     );
-    println!("cargo:rustc-link-lib=static=torrent-rasterbar");
+
+    let mut static_libs: Vec<&str> = Vec::new();
+    let mut dynamic_libs: Vec<&str> = Vec::new();
+
+    let boost_libs = [
+        "boost_atomic",
+        "boost_chrono",
+        "boost_container",
+        "boost_date_time",
+        "boost_exception",
+        "boost_filesystem",
+        "boost_random",
+        "boost_thread",
+    ];
+
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "static-boost")] {
+            static_libs.extend(boost_libs.iter());
+        } else {
+            dynamic_libs.extend(boost_libs.iter());
+        }
+    }
+
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "static-libtorrent")] {
+            static_libs.push("torrent-rasterbar");
+        } else {
+            dynamic_libs.push("torrent-rasterbar");
+        }
+    }
+
+    cfg_if::cfg_if! {
+        if #[cfg(feature = "static-ssl")] {
+            static_libs.push("ssl");
+            static_libs.push("crypto");
+        } else {
+            dynamic_libs.push("ssl");
+            dynamic_libs.push("crypto");
+        }
+    };
+
+    for lib in static_libs {
+        println!("cargo:rustc-link-lib=static={}", lib);
+    }
+    for lib in dynamic_libs {
+        println!("cargo:rustc-link-lib={}", lib);
+    }
 
     let rust_srcs = find_files(Path::new("src/ffi"), "rs");
 
@@ -135,7 +177,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .std("c++20")
         .include(&manifest_dir)
         .include(libtorrent_dir.join("include"))
-        .include(boost_dir)
+        .include(include_dir)
         .define("BOOST_ASIO_HEADER_ONLY", Some("1"))
         .flag_if_supported("-O3")
         .compile("ltbridge");
