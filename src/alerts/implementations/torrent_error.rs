@@ -1,6 +1,10 @@
 use crate::{
-    alerts::TorrentErrorAlert, errors::LtrsError,
-    ffi::alerts::torrent_error::ffi::torrent_error_alert_get_error,
+    alerts::TorrentErrorAlert,
+    errors::LtrsError,
+    ffi::alerts::torrent_error::ffi::{
+        torrent_error_alert_get_error, torrent_error_alert_get_filename,
+    },
+    torrent_handle::TorrentHandle,
 };
 
 impl TorrentErrorAlert {
@@ -21,11 +25,11 @@ impl TorrentErrorAlert {
 
     #[inline(always)]
     pub fn error(&self) -> LtrsError {
-        unsafe { torrent_error_alert_get_error(self) }.into();
+        unsafe { torrent_error_alert_get_error(self.0) }.into()
     }
 
     #[inline(always)]
     pub fn filename<'a>(&'a self) -> &'a str {
-        unsafe { torrent_error_alert_get_filename(self) }
+        unsafe { torrent_error_alert_get_filename(self.0) }
     }
 }

@@ -1,4 +1,4 @@
-use std::{marker::PhantomData, ops::Index};
+use std::marker::PhantomData;
 
 use cxx::CxxVector;
 
