@@ -1,13 +1,14 @@
 [package]
 name = "lt-rs"
-version = "0.1.0"
+version = "0.1.2"
 edition = "2024"
+authors = ["Pedro Liduino <liduinopedro@gmail.com>"]
 description = "Safe Libtorrent bindings for rust"
 repository = "https://github.com/pliduino/lt-rs"
 keywords = ["libtorrent", "bittorrent", "torrent"]
 categories = ["api-bindings", "network-programming"]
 readme = "README.md"
-license-file = "LICENSE"
+license = "MIT"
 
 [lints.rust]
 dead_code = "allow"
