@@ -1,10 +1,9 @@
 use crate::{
-    add_torrent_params::AddTorrentParamsRef, alerts::SaveResumeDataAlert,
-    ffi::alerts::save_resume_data::ffi::save_resume_data_alert_get_params,
-    torrent_handle::TorrentHandle,
+    alerts::TorrentErrorAlert, errors::LtrsError,
+    ffi::alerts::torrent_error::ffi::torrent_error_alert_get_error,
 };
 
-impl SaveResumeDataAlert {
+impl TorrentErrorAlert {
     #[inline(always)]
     pub fn handle(&self) -> TorrentHandle {
         self.as_torrent_alert().handle()
@@ -21,7 +20,12 @@ impl SaveResumeDataAlert {
     }
 
     #[inline(always)]
-    pub fn params<'a>(&'a self) -> AddTorrentParamsRef<'a> {
-        unsafe { save_resume_data_alert_get_params(self.0) }.into()
+    pub fn error(&self) -> LtrsError {
+        unsafe { torrent_error_alert_get_error(self) }.into();
+    }
+
+    #[inline(always)]
+    pub fn filename<'a>(&'a self) -> &'a str {
+        unsafe { torrent_error_alert_get_filename(self) }
     }
 }
