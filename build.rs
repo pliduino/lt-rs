@@ -9,8 +9,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         return Ok(());
     }
 
-    return Ok(());
-
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
     let manifest_dir = std::env::var("CARGO_MANIFEST_DIR")?;
 
