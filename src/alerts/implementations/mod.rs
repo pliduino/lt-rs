@@ -8,5 +8,6 @@ pub mod save_resume_data;
 pub mod save_resume_data_failed;
 pub mod state_changed;
 pub mod state_update;
+pub mod torrent_error;
 pub mod torrent_removed;
 pub mod tracker_error;

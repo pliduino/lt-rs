@@ -10,6 +10,7 @@ pub mod alerts {
     pub mod state_changed;
     pub mod state_update;
     pub mod torrent_alert;
+    pub mod torrent_error;
     pub mod torrent_removed;
     pub mod tracker_alert;
     pub mod tracker_error;

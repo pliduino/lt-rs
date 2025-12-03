@@ -5,6 +5,7 @@ use crate::{
 };
 
 impl StateUpdateAlert {
+    #[inline(always)]
     pub fn status<'a>(&'a self) -> TorrentStatusVecRef<'a> {
         unsafe { state_update_alert_get_status(self.0) }.into()
     }
