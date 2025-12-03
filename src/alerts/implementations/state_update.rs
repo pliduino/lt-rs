@@ -1,7 +1,6 @@
 use crate::{
-    alerts::StateUpdateAlert,
-    ffi::alerts::state_update::ffi::state_update_alert_get_status,
-    torrent_status::{TorrentStatus, TorrentStatusVecRef},
+    alerts::StateUpdateAlert, ffi::alerts::state_update::ffi::state_update_alert_get_status,
+    torrent_status::TorrentStatusVecRef,
 };
 
 impl StateUpdateAlert {
