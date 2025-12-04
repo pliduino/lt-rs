@@ -1,12 +1,12 @@
 use crate::{
-    alerts::{TrackerWarningAlert, protocol_version::ProtocolVersion},
-    ffi::alerts::tracker_warning::ffi::{
-        tracker_warning_alert_get_version, tracker_warning_alert_get_warning_message,
+    alerts::{ScrapeReplyAlert, protocol_version::ProtocolVersion},
+    ffi::alerts::scrape_reply::ffi::{
+        scrape_reply_alert_get_complete, scrape_reply_alert_get_incomplete,
+        scrape_reply_alert_get_version,
     },
-    torrent_handle::TorrentHandle,
 };
 
-impl TrackerWarningAlert {
+impl ScrapeReplyAlert {
     #[inline(always)]
     pub fn handle(&self) -> TorrentHandle {
         self.as_torrent_alert().handle()
@@ -33,12 +33,17 @@ impl TrackerWarningAlert {
     }
 
     #[inline(always)]
-    pub fn warning_message<'a>(&'a self) -> &'a str {
-        unsafe { tracker_warning_alert_get_warning_message(self.0) }
+    pub fn version(&self) -> ProtocolVersion {
+        ProtocolVersion::from_u8(unsafe { scrape_reply_alert_get_version(self.0) })
     }
 
     #[inline(always)]
-    pub fn version(&self) -> ProtocolVersion {
-        ProtocolVersion::from_u8(unsafe { tracker_warning_alert_get_version(self.0) })
+    pub fn complete(&self) -> u32 {
+        unsafe { scrape_reply_alert_get_complete(self.0) }
+    }
+
+    #[inline(always)]
+    pub fn incomplete(&self) -> u32 {
+        unsafe { scrape_reply_alert_get_incomplete(self.0) }
     }
 }

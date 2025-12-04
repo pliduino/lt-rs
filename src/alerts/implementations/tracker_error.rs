@@ -32,8 +32,7 @@ impl TrackerErrorAlert {
 
     #[inline(always)]
     pub fn local_endpoint(&self) {
-        unimplemented!()
-        // unsafe { tracker_error_alert_get(self.0) }
+        self.as_tracker_alert().local_endpoint()
     }
 
     #[inline(always)]
