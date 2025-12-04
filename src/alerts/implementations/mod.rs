@@ -6,6 +6,7 @@ pub mod performance;
 pub mod read_piece;
 pub mod save_resume_data;
 pub mod save_resume_data_failed;
+pub mod scrape_reply;
 pub mod state_changed;
 pub mod state_update;
 pub mod torrent_error;
