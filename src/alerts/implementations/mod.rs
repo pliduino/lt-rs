@@ -11,3 +11,4 @@ pub mod state_update;
 pub mod torrent_error;
 pub mod torrent_removed;
 pub mod tracker_error;
+pub mod tracker_warning;

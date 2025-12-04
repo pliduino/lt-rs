@@ -14,6 +14,7 @@ pub mod alerts {
     pub mod torrent_removed;
     pub mod tracker_alert;
     pub mod tracker_error;
+    pub mod tracker_warning;
 }
 
 pub mod error;
