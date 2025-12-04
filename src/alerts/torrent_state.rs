@@ -47,6 +47,18 @@ pub enum TorrentState {
     Unknown,
 }
 
+impl TorrentState {
+    pub(crate) fn from_u8(v: u8) -> Self {
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "safe_enums")] {
+                v.into()
+            } else {
+                unsafe { std::mem::transmute(v) }
+            }
+        }
+    }
+}
+
 impl Display for TorrentState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self)

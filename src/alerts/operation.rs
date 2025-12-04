@@ -151,8 +151,9 @@ pub enum Operation {
     FileTruncate,
 }
 
-impl Operation {
-    pub unsafe fn from_u8(value: u8) -> Self {
-        unsafe { std::mem::transmute(value) }
+#[cfg(not(feature = "safe_enums"))]
+impl From<u8> for Operation {
+    fn from(v: u8) -> Self {
+        unsafe { std::mem::transmute(v) }
     }
 }

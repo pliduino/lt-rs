@@ -23,12 +23,6 @@ impl PerformanceAlert {
     #[inline(always)]
     pub fn warning_code(&self) -> PerformanceWarning {
         let warning_code = unsafe { performance_alert_get_warning_code(self.0) };
-        cfg_if::cfg_if! {
-            if #[cfg(feature = "safe_enums")] {
-                warning_code.into()
-            } else {
-                unsafe { std::mem::transmute(warning_code) }
-            }
-        }
+        PerformanceWarning::from_u8(warning_code)
     }
 }

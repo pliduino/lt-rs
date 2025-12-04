@@ -34,13 +34,6 @@ impl TrackerWarningAlert {
 
     #[inline(always)]
     pub fn version(&self) -> ProtocolVersion {
-        let version = unsafe { tracker_warning_alert_get_version(self.0) };
-        cfg_if::cfg_if! {
-            if #[cfg(feature = "safe_enums")] {
-                version.into()
-            } else {
-                unsafe { std::mem::transmute(version) }
-            }
-        }
+        ProtocolVersion::from_u8(unsafe { tracker_warning_alert_get_version(self.0) })
     }
 }

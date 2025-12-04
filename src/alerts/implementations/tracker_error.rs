@@ -54,26 +54,12 @@ impl TrackerErrorAlert {
 
     #[inline(always)]
     pub fn op(&self) -> Operation {
-        let op = unsafe { tracker_error_alert_get_op(self.0) };
-        cfg_if::cfg_if! {
-            if #[cfg(feature = "safe_enums")] {
-                op.into()
-            } else {
-                unsafe { Operation::from_u8(op) }
-            }
-        }
+        unsafe { tracker_error_alert_get_op(self.0) }.into()
     }
 
     /// The bittorrent protocol version that was announced
     #[inline(always)]
     pub fn version(&self) -> ProtocolVersion {
-        let version = unsafe { tracker_error_alert_get_version(self.0) };
-        cfg_if::cfg_if! {
-            if #[cfg(feature = "safe_enums")] {
-                version.into()
-            } else {
-                unsafe { std::mem::transmute(version) }
-            }
-        }
+        ProtocolVersion::from_u8(unsafe { tracker_error_alert_get_version(self.0) })
     }
 }

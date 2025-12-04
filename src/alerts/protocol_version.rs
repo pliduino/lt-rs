@@ -10,3 +10,15 @@ pub enum ProtocolVersion {
     #[num_enum(default)]
     Unknown,
 }
+
+impl ProtocolVersion {
+    pub(crate) fn from_u8(v: u8) -> Self {
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "safe_enums")] {
+                v.into()
+            } else {
+                unsafe { std::mem::transmute(v) }
+            }
+        }
+    }
+}
