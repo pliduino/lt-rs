@@ -2,6 +2,7 @@ use crate::alerts::TrackerAnnounceAlert;
 use crate::ffi::alerts::tracker_announce::ffi::{
     tracker_announce_alert_get_event, tracker_announce_alert_get_version,
 };
+use crate::torrent_handle::TorrentHandle;
 
 impl TrackerAnnounceAlert {
     #[inline(always)]

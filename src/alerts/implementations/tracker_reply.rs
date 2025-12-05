@@ -3,6 +3,7 @@ use crate::{
     ffi::alerts::tracker_reply::ffi::{
         tracker_reply_alert_get_num_peers, tracker_reply_alert_get_version,
     },
+    torrent_handle::TorrentHandle,
 };
 
 impl TrackerReplyAlert {

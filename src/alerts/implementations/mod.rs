@@ -3,6 +3,7 @@ pub mod dht_reply;
 pub mod file_completed;
 pub mod file_rename_failed;
 pub mod file_renamed;
+pub mod hash_failed;
 pub mod performance;
 pub mod read_piece;
 pub mod save_resume_data;

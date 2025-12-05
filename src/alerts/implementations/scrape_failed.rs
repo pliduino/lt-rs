@@ -5,6 +5,7 @@ use crate::{
         scrape_failed_alert_get_error, scrape_failed_alert_get_error_message,
         scrape_failed_alert_get_version,
     },
+    torrent_handle::TorrentHandle,
 };
 
 impl ScrapeFailedAlert {

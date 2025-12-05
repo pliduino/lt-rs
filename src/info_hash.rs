@@ -2,6 +2,14 @@ use base64::{Engine, prelude::BASE64_URL_SAFE_NO_PAD};
 
 use crate::ffi::ffi;
 
+pub struct Sha1Hash([u8; 20]);
+
+impl From<[u8; 20]> for Sha1Hash {
+    fn from(value: [u8; 20]) -> Self {
+        Sha1Hash(value)
+    }
+}
+
 #[derive(Debug, Clone, Copy)]
 pub enum InfoHash {
     V1([u8; 20]),

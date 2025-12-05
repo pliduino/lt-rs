@@ -1,6 +1,6 @@
 use cxx::UniquePtr;
 
-use crate::alerts::PieceIndex;
+use crate::alerts::types::PieceIndex;
 use crate::ffi::torrent_handle::ffi::{
     torrent_handle, torrent_handle_in_session, torrent_handle_info_hashes,
     torrent_handle_read_piece, torrent_handle_save_resume_data,
@@ -133,7 +133,7 @@ impl TorrentHandle {
     /// If you read multiple pieces, the read operations are not guaranteed to finish in
     /// the same order as you initiated them.
     fn read_piece(&self, piece: PieceIndex) {
-        torrent_handle_read_piece(&self.0, piece);
+        torrent_handle_read_piece(&self.0, piece.to_inner());
     }
 
     pub fn status(&self) -> TorrentStatus {
