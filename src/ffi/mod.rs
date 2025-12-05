@@ -6,6 +6,9 @@ pub mod alerts {
     pub mod file_renamed;
     pub mod hash_failed;
     pub mod peer_alert;
+    pub mod peer_connect;
+    pub mod peer_disconnected;
+    pub mod peer_error;
     pub mod performance;
     pub mod read_piece;
     pub mod save_resume_data;
