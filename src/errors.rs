@@ -12,8 +12,8 @@ pub enum LtrsError {
     BdecodeError(BdecodeError),
     SocksError(SocksError),
     UpnpError(UpnpError),
-    // If error category is not known
-    // This is enable even without safe_enums feature because we need to check
+    /// If error category is not known
+    // This is enabled even without safe_enums feature because we need to check
     // libtorrent to see if we already covered all possible variants
     Unknown(i32),
 }
@@ -31,8 +31,6 @@ impl Display for LtrsError {
             LtrsError::UpnpError(e) => write!(f, "UpnpError: {:?}", e),
             LtrsError::Unknown(e) => write!(f, "Unknown: {:?}", e),
         }
-    }
-}
     }
 }
 

@@ -11,6 +11,7 @@ pub mod protocol_version;
 pub mod torrent_alert;
 pub mod torrent_state;
 pub mod tracker_alert;
+pub mod types;
 
 pub use torrent_alert::TorrentAlert;
 pub use torrent_state::TorrentState;

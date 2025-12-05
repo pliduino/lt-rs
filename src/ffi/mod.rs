@@ -1,5 +1,6 @@
 pub mod alerts {
     pub mod add_torrent;
+    pub mod dht_reply;
     pub mod file_completed;
     pub mod file_rename_failed;
     pub mod file_renamed;
@@ -7,6 +8,7 @@ pub mod alerts {
     pub mod read_piece;
     pub mod save_resume_data;
     pub mod save_resume_data_failed;
+    pub mod scrape_failed;
     pub mod scrape_reply;
     pub mod state_changed;
     pub mod state_update;
@@ -15,6 +17,7 @@ pub mod alerts {
     pub mod torrent_removed;
     pub mod tracker_alert;
     pub mod tracker_error;
+    pub mod tracker_reply;
     pub mod tracker_warning;
 }
 
