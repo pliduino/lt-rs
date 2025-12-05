@@ -12,15 +12,15 @@ pub enum Event {
     Unknown,
 }
 
-pub struct PieceIndex(i32);
+pub use crate::ffi::ffi::PieceIndex;
 
 impl PieceIndex {
     pub fn new(value: i32) -> Self {
-        Self(value)
+        Self { inner: value }
     }
 
     pub fn to_inner(self) -> i32 {
-        self.0
+        self.inner
     }
 }
 
@@ -173,6 +173,13 @@ impl CloseReason {
                 unsafe { std::mem::transmute(value) }
             }
         }
+    }
+}
+
+pub use crate::ffi::ffi::PeerRequest;
+impl PartialEq for PeerRequest {
+    fn eq(&self, other: &Self) -> bool {
+        self.piece == other.piece && self.start == other.start && self.length == other.length
     }
 }
 

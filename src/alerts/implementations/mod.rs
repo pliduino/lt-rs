@@ -4,6 +4,7 @@ pub mod file_completed;
 pub mod file_rename_failed;
 pub mod file_renamed;
 pub mod hash_failed;
+pub mod invalid_request;
 pub mod peer_ban;
 pub mod peer_connect;
 pub mod peer_disconnected;

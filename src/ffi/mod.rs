@@ -1,30 +1,31 @@
-pub mod alerts {
-    pub mod add_torrent;
-    pub mod dht_reply;
-    pub mod file_completed;
-    pub mod file_rename_failed;
-    pub mod file_renamed;
-    pub mod hash_failed;
-    pub mod peer_alert;
-    pub mod peer_connect;
-    pub mod peer_disconnected;
-    pub mod peer_error;
-    pub mod performance;
-    pub mod read_piece;
-    pub mod save_resume_data;
-    pub mod save_resume_data_failed;
-    pub mod scrape_failed;
-    pub mod scrape_reply;
-    pub mod state_changed;
-    pub mod state_update;
-    pub mod torrent_alert;
-    pub mod torrent_error;
-    pub mod torrent_removed;
-    pub mod tracker_alert;
-    pub mod tracker_announce;
-    pub mod tracker_error;
-    pub mod tracker_reply;
-    pub mod tracker_warning;
+pub(crate) mod alerts {
+    pub(crate) mod add_torrent;
+    pub(crate) mod dht_reply;
+    pub(crate) mod file_completed;
+    pub(crate) mod file_rename_failed;
+    pub(crate) mod file_renamed;
+    pub(crate) mod hash_failed;
+    pub(crate) mod invalid_request;
+    pub(crate) mod peer_alert;
+    pub(crate) mod peer_connect;
+    pub(crate) mod peer_disconnected;
+    pub(crate) mod peer_error;
+    pub(crate) mod performance;
+    pub(crate) mod read_piece;
+    pub(crate) mod save_resume_data;
+    pub(crate) mod save_resume_data_failed;
+    pub(crate) mod scrape_failed;
+    pub(crate) mod scrape_reply;
+    pub(crate) mod state_changed;
+    pub(crate) mod state_update;
+    pub(crate) mod torrent_alert;
+    pub(crate) mod torrent_error;
+    pub(crate) mod torrent_removed;
+    pub(crate) mod tracker_alert;
+    pub(crate) mod tracker_announce;
+    pub(crate) mod tracker_error;
+    pub(crate) mod tracker_reply;
+    pub(crate) mod tracker_warning;
 }
 
 pub mod error;
@@ -35,6 +36,22 @@ pub(crate) mod ffi {
     pub struct InfoHashCpp {
         version: u8, // 1 for v1, 2 for v2
         inner: [u8; 32],
+    }
+
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+    pub struct PieceIndex {
+        inner: i32,
+    }
+
+    /// Represents a byte range within a piece. Internally this is is used for
+    /// incoming piece requests.
+    struct PeerRequest {
+        /// The index of the piece in which the range starts.
+        piece: PieceIndex,
+        /// The byte offset within that piece where the range starts.
+        start: i32,
+        /// The size of the range, in bytes.
+        length: i32,
     }
 
     enum AlertType {

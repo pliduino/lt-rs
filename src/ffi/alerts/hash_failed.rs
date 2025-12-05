@@ -7,6 +7,8 @@ pub(crate) mod ffi {
 
     unsafe extern "C++" {
         include!("cpp/alerts/hash_failed.h");
-        unsafe fn hash_failed_alert_get_piece_index(alert: *mut hash_failed_alert) -> i32;
+
+        type PieceIndex = crate::ffi::ffi::PieceIndex;
+        unsafe fn hash_failed_alert_get_piece_index(alert: *mut hash_failed_alert) -> PieceIndex;
     }
 }
