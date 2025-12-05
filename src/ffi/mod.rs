@@ -4,6 +4,8 @@ pub mod alerts {
     pub mod file_completed;
     pub mod file_rename_failed;
     pub mod file_renamed;
+    pub mod hash_failed;
+    pub mod peer_alert;
     pub mod performance;
     pub mod read_piece;
     pub mod save_resume_data;
@@ -16,6 +18,7 @@ pub mod alerts {
     pub mod torrent_error;
     pub mod torrent_removed;
     pub mod tracker_alert;
+    pub mod tracker_announce;
     pub mod tracker_error;
     pub mod tracker_reply;
     pub mod tracker_warning;

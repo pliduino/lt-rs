@@ -1,4 +1,4 @@
-use std::path::Display;
+use std::fmt::Display;
 
 use crate::ffi::error::ffi::{self};
 

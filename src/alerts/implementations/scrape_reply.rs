@@ -4,6 +4,7 @@ use crate::{
         scrape_reply_alert_get_complete, scrape_reply_alert_get_incomplete,
         scrape_reply_alert_get_version,
     },
+    torrent_handle::TorrentHandle,
 };
 
 impl ScrapeReplyAlert {
@@ -38,12 +39,12 @@ impl ScrapeReplyAlert {
     }
 
     #[inline(always)]
-    pub fn complete(&self) -> u32 {
+    pub fn complete(&self) -> i32 {
         unsafe { scrape_reply_alert_get_complete(self.0) }
     }
 
     #[inline(always)]
-    pub fn incomplete(&self) -> u32 {
+    pub fn incomplete(&self) -> i32 {
         unsafe { scrape_reply_alert_get_incomplete(self.0) }
     }
 }

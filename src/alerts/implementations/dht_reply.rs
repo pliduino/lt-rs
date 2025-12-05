@@ -1,5 +1,6 @@
 use crate::alerts::DhtReplyAlert;
 use crate::ffi::alerts::dht_reply::ffi::dht_reply_alert_get_num_peers;
+use crate::torrent_handle::TorrentHandle;
 
 impl DhtReplyAlert {
     #[inline(always)]
@@ -28,7 +29,7 @@ impl DhtReplyAlert {
     }
 
     #[inline(always)]
-    pub fn num_peers(&self) {
+    pub fn num_peers(&self) -> i32 {
         unsafe { dht_reply_alert_get_num_peers(self.0) }
     }
 }
