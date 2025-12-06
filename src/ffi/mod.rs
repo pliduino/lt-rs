@@ -1,5 +1,7 @@
 pub(crate) mod alerts {
     pub(crate) mod add_torrent;
+    pub(crate) mod block_downloading;
+    pub(crate) mod block_timeout;
     pub(crate) mod dht_reply;
     pub(crate) mod file_completed;
     pub(crate) mod file_rename_failed;
@@ -11,7 +13,9 @@ pub(crate) mod alerts {
     pub(crate) mod peer_disconnected;
     pub(crate) mod peer_error;
     pub(crate) mod performance;
+    pub(crate) mod piece_finished;
     pub(crate) mod read_piece;
+    pub(crate) mod request_dropped;
     pub(crate) mod save_resume_data;
     pub(crate) mod save_resume_data_failed;
     pub(crate) mod scrape_failed;
