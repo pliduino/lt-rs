@@ -17,8 +17,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(feature = "static-libtorrent")]
     let libtorrent_dir = PathBuf::from(manifest_dir.clone() + "/vendor/libtorrent");
 
-    let include_dir = PathBuf::from(manifest_dir.clone() + "/include");
-
     // #[cfg(feature = "static-boost")]
     // let boost_build = out_dir.join("boost-build");
     #[cfg(feature = "static-libtorrent")]
@@ -91,7 +89,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             &format!("location={}", libtorrent_lib_dir.display()),
             //"--layout=system",
             &format!("--build-dir={}", libtorrent_build.display()),
-            &format!("include={}", include_dir.display()),
         ]);
 
         #[cfg(feature = "lto")]
@@ -181,7 +178,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .std("c++20")
         .include(&manifest_dir)
         .include(libtorrent_dir.join("include"))
-        .include(include_dir)
         .define("BOOST_ASIO_HEADER_ONLY", Some("1"))
         .flag_if_supported("-O3")
         .compile("ltbridge");
