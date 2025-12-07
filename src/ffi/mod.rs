@@ -9,6 +9,7 @@ pub(crate) mod alerts {
     pub(crate) mod file_renamed;
     pub(crate) mod hash_failed;
     pub(crate) mod invalid_request;
+    pub(crate) mod metadata_failed;
     pub(crate) mod peer_alert;
     pub(crate) mod peer_connect;
     pub(crate) mod peer_disconnected;
