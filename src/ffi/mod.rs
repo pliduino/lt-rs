@@ -4,6 +4,7 @@ pub(crate) mod alerts {
     pub(crate) mod block_timeout;
     pub(crate) mod dht_reply;
     pub(crate) mod file_completed;
+    pub(crate) mod file_error;
     pub(crate) mod file_rename_failed;
     pub(crate) mod file_renamed;
     pub(crate) mod hash_failed;
@@ -22,7 +23,11 @@ pub(crate) mod alerts {
     pub(crate) mod scrape_reply;
     pub(crate) mod state_changed;
     pub(crate) mod state_update;
+    pub(crate) mod storage_moved;
+    pub(crate) mod storage_moved_failed;
     pub(crate) mod torrent_alert;
+    pub(crate) mod torrent_delete_failed;
+    pub(crate) mod torrent_deleted;
     pub(crate) mod torrent_error;
     pub(crate) mod torrent_removed;
     pub(crate) mod tracker_alert;
@@ -30,6 +35,8 @@ pub(crate) mod alerts {
     pub(crate) mod tracker_error;
     pub(crate) mod tracker_reply;
     pub(crate) mod tracker_warning;
+    pub(crate) mod unwanted_block;
+    pub(crate) mod url_seed;
 }
 
 pub mod error;

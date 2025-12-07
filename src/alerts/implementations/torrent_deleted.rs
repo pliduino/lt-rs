@@ -1,9 +1,9 @@
-use crate::add_torrent_params::AddTorrentParamsRef;
-use crate::alerts::SaveResumeDataAlert;
-use crate::ffi::alerts::save_resume_data::ffi::save_resume_data_alert_get_params;
+use crate::alerts::TorrentDeletedAlert;
+use crate::ffi::alerts::torrent_deleted::ffi::torrent_deleted_alert_get_info_hashes;
+use crate::info_hash::InfoHash;
 use crate::torrent_handle::TorrentHandle;
 
-impl SaveResumeDataAlert {
+impl TorrentDeletedAlert {
     #[inline(always)]
     pub fn handle(&self) -> TorrentHandle {
         self.as_torrent_alert().handle()
@@ -20,7 +20,7 @@ impl SaveResumeDataAlert {
     }
 
     #[inline(always)]
-    pub fn params<'a>(&'a self) -> AddTorrentParamsRef<'a> {
-        unsafe { save_resume_data_alert_get_params(self.0) }.into()
+    pub fn info_hashes(&self) -> InfoHash {
+        unsafe { torrent_deleted_alert_get_info_hashes(self.0) }.into()
     }
 }
