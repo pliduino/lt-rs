@@ -9,6 +9,7 @@ pub mod file_renamed;
 pub mod hash_failed;
 pub mod invalid_request;
 pub mod metadata_failed;
+pub mod metadata_received;
 pub mod peer_ban;
 pub mod peer_connect;
 pub mod peer_disconnected;
