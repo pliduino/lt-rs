@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 use crate::ffi::error::ffi::{self};
 
 #[derive(Debug)]
@@ -18,7 +16,7 @@ pub enum LtrsError {
     Unknown(i32),
 }
 
-impl Display for LtrsError {
+impl std::fmt::Display for LtrsError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             LtrsError::LibtorrentError(e) => write!(f, "LibtorrentError: {:?}", e),
@@ -33,6 +31,8 @@ impl Display for LtrsError {
         }
     }
 }
+
+impl Error for LtrsError {}
 
 impl LtrsError {
     pub fn is_ok(&self) -> bool {
@@ -332,7 +332,7 @@ pub enum LibtorrentError {
     RequiresSslConnection,
     /// The peer tried to connect to a torrent with a certificate
     /// for a different torrent.
-    InvalidSslCert,
+    InrrvalidSslCert,
     /// the torrent is not an SSL torrent, and the operation requires
     /// an SSL torrent
     NotAnSslTorrent,
