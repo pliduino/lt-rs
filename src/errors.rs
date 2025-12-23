@@ -32,7 +32,7 @@ impl std::fmt::Display for LtrsError {
     }
 }
 
-impl Error for LtrsError {}
+impl std::error::Error for LtrsError {}
 
 impl LtrsError {
     pub fn is_ok(&self) -> bool {
