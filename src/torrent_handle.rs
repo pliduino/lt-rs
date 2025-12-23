@@ -134,7 +134,7 @@ impl TorrentHandle {
     /// If you read multiple pieces, the read operations are not guaranteed to finish in
     /// the same order as you initiated them.
     fn read_piece(&self, piece: PieceIndex) {
-        torrent_handle_read_piece(&self.0, piece.to_inner());
+        torrent_handle_read_piece(&self.0, piece);
     }
 
     pub fn status(&self) -> TorrentStatus {

@@ -1,7 +1,5 @@
 #include "./torrent_handle.h"
 
-#include "lt-rs/src/ffi/mod.rs.h"
-
 namespace ltrs {
     bool torrent_handle_in_session(const lt::torrent_handle &handle) {
       return handle.in_session();
@@ -22,12 +20,7 @@ namespace ltrs {
       handle.save_resume_data((lt::resume_data_flags_t)flags);
     }
 
-    void torrent_handle_read_piece(const lt::torrent_handle &handle, int piece) {
-      // TODO
-       // handle.read_piece((lt::piece_index_t)piece);
-
-       // Just so the compiler shuts up for now
-       (void)piece;
-       (void)handle;
+    void torrent_handle_read_piece(const lt::torrent_handle &handle, PieceIndex piece) {
+       handle.read_piece(lt::piece_index_t(piece.inner));
     }
 }

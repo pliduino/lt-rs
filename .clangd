@@ -1,6 +1,6 @@
 CompileFlags:
   Add: [
-    "-Iinclude",
+    "-Ivendor/libtorrent/include",
     "-Itarget/cxxbridge",
     "-I/nix/store/0sq0a7z7170nxiiizqpjflqn6aangiwf-libcxx-21.1.2-dev/include/c++/v1",
     "-I./",
@@ -9,5 +9,6 @@ CompileFlags:
     "-std=c++20",
     "-DBOOST_ASIO_NO_DEPRECATED",
     "-DBOOST_ASIO_HEADER_ONLY",
-    "-DTORRENT_NO_DEPRECATE"
+    "-DTORRENT_NO_DEPRECATE",
+    "-I/nix/store/6fh81ixdxjvlh8ar31c2m3b5f36im9n7-boost-1.87.0-dev/include"
   ]
