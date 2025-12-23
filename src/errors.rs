@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::ffi::error::ffi::{self};
 
 #[derive(Debug)]
@@ -10,10 +12,26 @@ pub enum LtrsError {
     BdecodeError(BdecodeError),
     SocksError(SocksError),
     UpnpError(UpnpError),
-    // If error category is not known
-    // This is enable even without safe_enums feature because we need to check
+    /// If error category is not known
+    // This is enabled even without safe_enums feature because we need to check
     // libtorrent to see if we already covered all possible variants
     Unknown(i32),
+}
+
+impl Display for LtrsError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            LtrsError::LibtorrentError(e) => write!(f, "LibtorrentError: {:?}", e),
+            LtrsError::HttpError(e) => write!(f, "HttpError: {:?}", e),
+            LtrsError::GzipError(e) => write!(f, "GzipError: {:?}", e),
+            LtrsError::I2pError(e) => write!(f, "I2pError: {:?}", e),
+            LtrsError::PcpError(e) => write!(f, "PcpError: {:?}", e),
+            LtrsError::BdecodeError(e) => write!(f, "BdecodeError: {:?}", e),
+            LtrsError::SocksError(e) => write!(f, "SocksError: {:?}", e),
+            LtrsError::UpnpError(e) => write!(f, "UpnpError: {:?}", e),
+            LtrsError::Unknown(e) => write!(f, "Unknown: {:?}", e),
+        }
+    }
 }
 
 impl LtrsError {

@@ -19,7 +19,7 @@ impl<'a> TrackerAlertRaw<'a> {
         unsafe { tracker_alert_get_tracker_url(self.0) }
     }
 
-    pub(crate) fn local_endpoint() {
+    pub(crate) fn local_endpoint(&self) {
         unimplemented!()
     }
 }

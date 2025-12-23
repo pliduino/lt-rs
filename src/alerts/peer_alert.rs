@@ -7,7 +7,8 @@ use crate::{
         PeerConnectAlert, PeerDisconnectedAlert, PeerErrorAlert, PeerLogAlert, PeerSnubbedAlert,
         PeerUnsnubbedAlert, PickerLogAlert, RequestDroppedAlert, UnwantedBlockAlert,
     },
-    ffi::ffi,
+    ffi::{alerts::peer_alert::ffi::peer_alert_get_pid, ffi},
+    info_hash::Sha1Hash,
 };
 
 pub(super) struct PeerAlertRaw<'a>(*mut ffi::peer_alert, PhantomData<&'a ()>);
@@ -15,6 +16,16 @@ pub(super) struct PeerAlertRaw<'a>(*mut ffi::peer_alert, PhantomData<&'a ()>);
 impl<'a> PeerAlertRaw<'a> {
     pub(crate) fn new(alert: *mut ffi::peer_alert) -> PeerAlertRaw<'a> {
         PeerAlertRaw(alert, PhantomData)
+    }
+}
+
+pub type Endpoint = ();
+pub type PeerId = Sha1Hash;
+
+impl<'a> PeerAlertRaw<'a> {
+    pub fn endpoint(&self) -> Endpoint {}
+    pub fn peer_id(&self) -> PeerId {
+        unsafe { peer_alert_get_pid(self.0) }.into()
     }
 }
 

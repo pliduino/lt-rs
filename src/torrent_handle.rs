@@ -1,6 +1,6 @@
 use cxx::UniquePtr;
 
-use crate::alerts::PieceIndex;
+use crate::alerts::types::PieceIndex;
 use crate::ffi::torrent_handle::ffi::{
     torrent_handle, torrent_handle_in_session, torrent_handle_info_hashes,
     torrent_handle_read_piece, torrent_handle_save_resume_data,
@@ -9,6 +9,7 @@ use crate::info_hash::InfoHash;
 use crate::torrent_status::TorrentStatus;
 
 // Torrent handles are just a weak pointer so we can just clone them from C++.
+// Maybe just copy the weak pointer instead of wrapping inside a unique pointer?
 pub struct TorrentHandle(UniquePtr<torrent_handle>);
 
 impl TorrentHandle {
