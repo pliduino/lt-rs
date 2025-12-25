@@ -94,6 +94,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         #[cfg(feature = "lto")]
         b2.arg("lto");
 
+        if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("windows") {
+            b2.arg("cxxflags=/Zc:__cplusplus");
+        }
+
         let status = b2.status().expect("Failed to build libtorrent");
         assert!(status.success(), "libtorrent build failed");
     }
@@ -128,7 +132,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     cfg_if::cfg_if! {
         if #[cfg(feature = "static-libtorrent")] {
-            static_libs.push("torrent-rasterbar");
+            if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("windows") {
+                static_libs.push("libtorrent-rasterbar");
+            } else {
+                static_libs.push("torrent-rasterbar");
+            }
         } else {
             dynamic_libs.push("torrent-rasterbar");
         }
