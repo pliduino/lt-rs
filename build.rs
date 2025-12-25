@@ -94,6 +94,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         #[cfg(feature = "lto")]
         b2.arg("lto");
 
+        if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("windows") {
+            b2.arg("cxxflags=/Zc:__cplusplus");
+            b2.arg("linkflags=/MT /Zl");
+        }
+
         let status = b2.status().expect("Failed to build libtorrent");
         assert!(status.success(), "libtorrent build failed");
     }
@@ -118,31 +123,47 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "boost_thread",
     ];
 
-    cfg_if::cfg_if! {
-        if #[cfg(feature = "static-boost")] {
-            static_libs.extend(boost_libs.iter());
-        } else {
-            dynamic_libs.extend(boost_libs.iter());
-        }
-    }
+    // cfg_if::cfg_if! {
+    //     if #[cfg(feature = "static-boost")] {
+    //         static_libs.extend(boost_libs.iter());
+    //     } else {
+    //         dynamic_libs.extend(boost_libs.iter());
+    //     }
+    // }
 
     cfg_if::cfg_if! {
         if #[cfg(feature = "static-libtorrent")] {
-            static_libs.push("torrent-rasterbar");
+            if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("windows") {
+                static_libs.push("libtorrent-rasterbar");
+            } else {
+                static_libs.push("torrent-rasterbar");
+            }
         } else {
             dynamic_libs.push("torrent-rasterbar");
         }
     }
 
-    cfg_if::cfg_if! {
-        if #[cfg(feature = "static-ssl")] {
-            static_libs.push("ssl");
-            static_libs.push("crypto");
-        } else {
-            dynamic_libs.push("ssl");
-            dynamic_libs.push("crypto");
-        }
-    };
+    if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("windows") {
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "static-ssl")] {
+                static_libs.push("libssl_static");
+                static_libs.push("libcrypto_static");
+            } else {
+                dynamic_libs.push("libssl");
+                dynamic_libs.push("libcrypto");
+            }
+        };
+    } else {
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "static-ssl")] {
+                static_libs.push("ssl");
+                static_libs.push("crypto");
+            } else {
+                dynamic_libs.push("ssl");
+                dynamic_libs.push("crypto");
+            }
+        };
+    }
 
     for lib in static_libs {
         println!("cargo:rustc-link-lib=static={}", lib);
@@ -158,6 +179,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if std::env::var("CARGO_CFG_TARGET_OS").as_deref() == Ok("windows") {
         cxx.define("_WIN32_WINNT", Some("0x0A00"));
         cxx.flag_if_supported("/EHsc");
+
+        if std::env::var("PROFILE").as_deref() == Ok("release") {
+            println!("cargo:rustc-link-arg=/MT /Zl");
+        } else {
+            println!("cargo:rustc-link-arg=/MTd /Zl");
+        }
     } else {
     }
 
