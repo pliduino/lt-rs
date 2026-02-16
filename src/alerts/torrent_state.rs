@@ -12,7 +12,7 @@ pub enum TorrentState {
 
     /// The torrent has not started its download yet, and is
     /// currently checking existing files.
-    CheckingFiles,
+    CheckingFiles = 1,
     /// The torrent is trying to download metadata from peers.
     /// This implies the ut_metadata extension is in use.
     DownloadingMetadata,
