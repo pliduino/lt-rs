@@ -1,14 +1,15 @@
 CompileFlags:
-  Add: [
-    "-Ivendor/libtorrent/include",
-    "-Itarget/cxxbridge",
-    "-I/nix/store/0sq0a7z7170nxiiizqpjflqn6aangiwf-libcxx-21.1.2-dev/include/c++/v1",
-    "-I./",
-    "-x",
-    "c++-header",
-    "-std=c++20",
-    "-DBOOST_ASIO_NO_DEPRECATED",
-    "-DBOOST_ASIO_HEADER_ONLY",
-    "-DTORRENT_NO_DEPRECATE",
-    "-I/nix/store/6fh81ixdxjvlh8ar31c2m3b5f36im9n7-boost-1.87.0-dev/include"
-  ]
+  Add:
+    [
+      "-Ivendor/libtorrent/include",
+      "-Itarget/cxxbridge",
+      "-I./",
+      "-x",
+      "c++-header",
+      "-std=c++20",
+      "-DBOOST_ASIO_NO_DEPRECATED",
+      "-DBOOST_ASIO_HEADER_ONLY",
+      "-DTORRENT_NO_DEPRECATE",
+      "-I/nix/store/nbdppb5r5xf34mvcb2g7s688hqwm92sh-libcxx-21.1.8-dev/include",
+      "-I/nix/store/adv73gqmglkg48w5ql70s778ba6wpbs4-boost-1.89.0-dev/include",
+    ]

@@ -320,6 +320,13 @@ pub(crate) mod ffi {
             session: Pin<&mut session>,
             params: *mut add_torrent_params,
         );
+
+        fn lt_session_delete_torrent(
+            session: Pin<&mut session>,
+            handle: &torrent_handle,
+            options: u32,
+        );
+
         fn lt_session_pop_alerts(session: Pin<&mut session>) -> Vec<CastAlertRaw>;
         fn lt_session_post_torrent_updates(session: Pin<&mut session>, flags: u32);
 

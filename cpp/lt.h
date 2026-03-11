@@ -1,4 +1,5 @@
 #pragma once
+#include "libtorrent/torrent_handle.hpp"
 #include "rust/cxx.h"
 
 #include <libtorrent/alert.hpp>
@@ -45,10 +46,13 @@ lt_create_session_with_settings(const lt::settings_pack &settings);
 std::unique_ptr<lt::torrent_handle>
 lt_session_add_torrent(lt::session &session, lt::add_torrent_params *params);
 
-rust::Vec<CastAlertRaw> lt_session_pop_alerts(lt::session &ses);
+void lt_session_delete_torrent(lt::session &session, const lt::torrent_handle &handle, uint32_t options);
 
 void lt_session_async_add_torrent(lt::session &session,
                                   lt::add_torrent_params *params);
+
+rust::Vec<CastAlertRaw> lt_session_pop_alerts(lt::session &ses);
+
 void lt_session_post_torrent_updates(lt::session &session, uint32_t flags);
 
 // ╔===========================================================================╗

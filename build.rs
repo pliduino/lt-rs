@@ -22,8 +22,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(feature = "static-libtorrent")]
     let libtorrent_build = out_dir.join("libtorrent-build");
 
-    #[cfg(feature = "static-boost")]
-    let boost_lib_dir = boost_build.join("lib");
+    // #[cfg(feature = "static-boost")]
+    // let boost_lib_dir = boost_build.join("lib");
     #[cfg(feature = "static-libtorrent")]
     let libtorrent_lib_dir = libtorrent_build.join("lib");
 

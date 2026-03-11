@@ -35,6 +35,10 @@ impl LtSession {
         // ffi::lt_session_add_torrent(self.inner.pin_mut(), params.inner()).into()
     }
 
+    pub fn remove_torrent<'a>(&'a mut self, handle: &TorrentHandle, options: RemoveFlags) {
+        ffi::lt_session_delete_torrent(self.inner.pin_mut(), handle.inner(), options.bits());
+    }
+
     pub fn async_add_torrent<T: AddTorrentParamsIntoPtr>(&mut self, params: &T) {
         unsafe { ffi::lt_session_async_add_torrent(self.inner.pin_mut(), params.as_ptr()) };
     }
@@ -78,3 +82,27 @@ unsafe impl Send for LtSession {}
 //         ffi::lt_destroy_session(self.inner.pin_mut());
 //     }
 // }
+
+bitflags::bitflags! {
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+    pub struct RemoveFlags: u32 {
+        /// Delete the files belonging to the torrent from disk.
+        /// including the part-file, if there is one
+        const DeleteFiles = 1 << 0;
+        /// Delete just the part-file associated with this torrent
+        const DeletePartfile = 1 << 1;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    pub use super::*;
+
+    // #[test]
+    // fn add_torrent() {
+    //     let mut session = LtSession::new();
+    //     let params = AddTorrentParams::;
+    //     let handle = session.add_torrent(&params);
+    //     assert!(handle.is_valid());
+    // }
+}
