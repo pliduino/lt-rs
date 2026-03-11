@@ -17,6 +17,10 @@ impl TorrentHandle {
         TorrentHandle(inner)
     }
 
+    pub(crate) fn inner(&self) -> &torrent_handle {
+        self.0.as_ref().unwrap()
+    }
+
     /// Returns true if the torrent is in the session. It returns true before session::remove_torrent() is called, and false afterward.
     /// ### Note
     /// This is a blocking function, unlike [`TorrentHandle::is_valid()`] which returns immediately.
@@ -37,10 +41,10 @@ impl TorrentHandle {
     /// The operation will fail, and post a save_resume_data_failed_alert
     /// instead, in the following cases:
     ///
-    ///	1. The torrent is in the process of being removed.
-    ///	2. No torrent state has changed since the last saving of resume
-    ///	   data, and the only_if_modified flag is set.
-    ///	   metadata (see libtorrent's metadata-from-peers_ extension)
+    //	1. The torrent is in the process of being removed.
+    //	2. No torrent state has changed since the last saving of resume
+    //   data, and the only_if_modified flag is set.
+    //	  metadata (see libtorrent's metadata-from-peers_ extension)
     ///
     /// Note that some counters may be outdated by the time you receive the fast resume data
     ///
@@ -64,62 +68,60 @@ impl TorrentHandle {
     /// Example code to pause and save resume data for all torrents and wait
     /// for the alerts:
     ///
-    /// .. code:: c++
-    ///
-    ///	extern int outstanding_resume_data; // global counter of outstanding resume data
-    ///	std::vector<torrent_handle> handles = ses.get_torrents();
-    ///	for (torrent_handle const& h : handles) try
-    ///	{
-    ///		h.save_resume_data(torrent_handle::only_if_modified);
-    ///		++outstanding_resume_data;
-    ///	}
-    ///	catch (lt::system_error const& e)
-    ///	{
-    ///		// the handle was invalid, ignore this one and move to the next
-    ///	}
-    ///
-    ///	while (outstanding_resume_data > 0)
-    ///	{
-    ///		alert const* a = ses.wait_for_alert(seconds(30));
-    ///
-    ///		// if we don't get an alert within 30 seconds, abort
-    ///		if (a == nullptr) break;
-    ///
-    ///		std::vector<alert*> alerts;
-    ///		ses.pop_alerts(&alerts);
-    ///
-    ///		for (alert* i : alerts)
-    ///		{
-    ///			if (alert_cast<save_resume_data_failed_alert>(i))
-    ///			{
-    ///				process_alert(i);
-    ///				--outstanding_resume_data;
-    ///				continue;
-    ///			}
-    ///
-    ///			save_resume_data_alert const* rd = alert_cast<save_resume_data_alert>(i);
-    ///			if (rd == nullptr)
-    ///			{
-    ///				process_alert(i);
-    ///				continue;
-    ///			}
-    ///
-    ///			std::ofstream out((rd->params.save_path
-    ///				+ "/" + rd->params.name + ".fastresume").c_str()
-    ///				, std::ios_base::binary);
-    ///			std::vector<char> buf = write_resume_data_buf(rd->params);
-    ///			out.write(buf.data(), buf.size());
-    ///			--outstanding_resume_data;
-    ///		}
-    ///	}
-    ///
-    ///.. note::
-    ///	Note how ``outstanding_resume_data`` is a global counter in this
-    ///	example. This is deliberate, otherwise there is a race condition for
-    ///	torrents that was just asked to save their resume data, they posted
-    ///	the alert, but it has not been received yet. Those torrents would
-    ///	report that they don't need to save resume data again, and skipped by
-    ///	the initial loop, and thwart the counter otherwise.
+    //	extern int outstanding_resume_data; // global counter of outstanding resume data
+    //	std::vector<torrent_handle> handles = ses.get_torrents();
+    //	for (torrent_handle const& h : handles) try
+    //	{
+    //		h.save_resume_data(torrent_handle::only_if_modified);
+    //		++outstanding_resume_data;
+    //	}
+    //	catch (lt::system_error const& e)
+    //	{
+    //		// the handle was invalid, ignore this one and move to the next
+    //	}
+    //
+    //	while (outstanding_resume_data > 0)
+    //	{
+    //		alert const* a = ses.wait_for_alert(seconds(30));
+    //
+    //		// if we don't get an alert within 30 seconds, abort
+    //		if (a == nullptr) break;
+    //
+    //		std::vector<alert*> alerts;
+    //		ses.pop_alerts(&alerts);
+    //
+    //		for (alert* i : alerts)
+    //		{
+    //			if (alert_cast<save_resume_data_failed_alert>(i))
+    //			{
+    //				process_alert(i);
+    //				--outstanding_resume_data;
+    //				continue;
+    //			}
+    //
+    //			save_resume_data_alert const* rd = alert_cast<save_resume_data_alert>(i);
+    //			if (rd == nullptr)
+    //			{
+    //				process_alert(i);
+    //				continue;
+    //			}
+    //
+    //			std::ofstream out((rd->params.save_path
+    //				+ "/" + rd->params.name + ".fastresume").c_str()
+    //				, std::ios_base::binary);
+    //			std::vector<char> buf = write_resume_data_buf(rd->params);
+    //			out.write(buf.data(), buf.size());
+    //			--outstanding_resume_data;
+    //		}
+    //	}
+    //
+    //.. note::
+    //	Note how ``outstanding_resume_data`` is a global counter in this
+    //	example. This is deliberate, otherwise there is a race condition for
+    //	torrents that was just asked to save their resume data, they posted
+    //	the alert, but it has not been received yet. Those torrents would
+    //	report that they don't need to save resume data again, and skipped by
+    //	the initial loop, and thwart the counter otherwise.
     pub fn save_resume_data(&self, flags: ResumeDataFlags) {
         torrent_handle_save_resume_data(&self.0, flags.bits());
     }

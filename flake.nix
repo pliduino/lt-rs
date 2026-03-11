@@ -21,14 +21,17 @@
         devShell = pkgs.mkShell {
           packages = with pkgs; [
             rustfmt
-            clang
             clang-tools
+            clang
             cargo
             rustc
             rust-analyzer
             lld
             boost
             boost-build
+          ];
+
+          nativeBuildInputs = with pkgs; [
           ];
 
           buildInputs = with pkgs; [

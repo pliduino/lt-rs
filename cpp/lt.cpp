@@ -58,6 +58,10 @@ lt_session_add_torrent(lt::session &session,
   return std::make_unique<lt::torrent_handle>(std::move(handle));
 }
 
+void lt_session_delete_torrent(lt::session &session, const lt::torrent_handle &handle, lt::remove_flags_t const options) {
+    session.remove_torrent(handle, (lt::remove_flags_t)options);
+}
+
 void lt_session_post_torrent_updates(lt::session &session, uint32_t flags) {
   session.post_torrent_updates((lt::status_flags_t)flags);
 }
