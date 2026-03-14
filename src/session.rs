@@ -96,13 +96,17 @@ bitflags::bitflags! {
 
 #[cfg(test)]
 mod tests {
+    use crate::add_torrent_params::AddTorrentParams;
+
     pub use super::*;
 
-    // #[test]
-    // fn add_torrent() {
-    //     let mut session = LtSession::new();
-    //     let params = AddTorrentParams::;
-    //     let handle = session.add_torrent(&params);
-    //     assert!(handle.is_valid());
-    // }
+    #[test]
+    fn add_torrent() {
+        // let mut session = LtSession::new();
+        // let params = AddTorrentParams::parse_magnet_uri(
+        //     "magnet:?xt=urn:btih:a4224d0f8de94e5f9633e8f7e6b49d2fa0a1c9f3&dn=ubuntu-16.04.1-desktop-amd64.iso.torrent",
+        // );
+        // let handle = session.add_torrent(&params);
+        // assert!(handle.is_valid());
+    }
 }

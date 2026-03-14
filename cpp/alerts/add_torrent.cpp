@@ -1,5 +1,4 @@
 #include "./add_torrent.h"
-#include "cpp/error.h"
 #include "libtorrent/add_torrent_params.hpp"
 
 namespace ltrs {

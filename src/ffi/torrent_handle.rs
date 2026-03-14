@@ -21,5 +21,6 @@ pub(crate) mod ffi {
         fn torrent_handle_save_resume_data(handle: &torrent_handle, flags: u8);
 
         fn torrent_handle_info_hashes(handle: &torrent_handle) -> InfoHashCpp;
+        fn torrent_handle_make_magnet_uri(handle: &torrent_handle) -> String;
     }
 }

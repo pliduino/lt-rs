@@ -1,9 +1,10 @@
 #pragma once
 #include "libtorrent/torrent_handle.hpp"
 #include "rust/cxx.h"
+#include <cpp/error.h>
 
-#include <libtorrent/alert.hpp>
 #include <libtorrent/add_torrent_params.hpp>
+#include <libtorrent/alert.hpp>
 #include <libtorrent/alert_types.hpp>
 #include <libtorrent/magnet_uri.hpp>
 #include <libtorrent/session.hpp>
@@ -14,19 +15,24 @@
 namespace ltrs {
 struct InfoHashCpp;
 struct CastAlertRaw;
+struct ParseMagnetUriResult;
 
-std::unique_ptr<lt::add_torrent_params>
-lt_parse_magnet_uri(rust::Str magnet_uri);
+ParseMagnetUriResult lt_parse_magnet_uri(rust::Str magnet_uri);
 
 InfoHashCpp info_hash_t_to_info_hash_cpp(const lt::info_hash_t &hash);
 
-void lt_set_add_torrent_params_path(lt::add_torrent_params *params, rust::Str path);
+void lt_set_add_torrent_params_path(lt::add_torrent_params *params,
+                                    rust::Str path);
 
-InfoHashCpp
-lt_add_torrent_params_info_hash(lt::add_torrent_params *params);
+InfoHashCpp lt_add_torrent_params_info_hash(lt::add_torrent_params *params);
 
-rust::Vec<uint8_t>
-lt_write_resume_data_buf(lt::add_torrent_params *params);
+rust::string
+lt_add_torrent_params_make_magnet_uri(const lt::add_torrent_params &params);
+
+rust::string
+lt_torrent_handle_make_magnet_uri(const lt::torrent_handle &handle);
+
+rust::Vec<uint8_t> lt_write_resume_data_buf(lt::add_torrent_params *params);
 
 std::unique_ptr<lt::add_torrent_params>
 lt_read_resume_data(rust::Slice<const uint8_t> buf);
@@ -46,7 +52,9 @@ lt_create_session_with_settings(const lt::settings_pack &settings);
 std::unique_ptr<lt::torrent_handle>
 lt_session_add_torrent(lt::session &session, lt::add_torrent_params *params);
 
-void lt_session_delete_torrent(lt::session &session, const lt::torrent_handle &handle, uint32_t options);
+void lt_session_delete_torrent(lt::session &session,
+                               const lt::torrent_handle &handle,
+                               uint32_t options);
 
 void lt_session_async_add_torrent(lt::session &session,
                                   lt::add_torrent_params *params);
@@ -58,7 +66,6 @@ void lt_session_post_torrent_updates(lt::session &session, uint32_t flags);
 // ╔===========================================================================╗
 // ║                              Torrent Handle                               ║
 // ╚===========================================================================╝
-
 
 // ╔===========================================================================╗
 // ║                              Torrent Status                               ║
@@ -100,7 +107,6 @@ lt::state_update_alert *lt_alert_state_update_cast(lt::alert *alert);
 std::unique_ptr<std::vector<lt::torrent_status>>
 lt_alert_state_update_status(lt::state_update_alert *alert);
 
-
 // =======================  Save Resume Data Failed  =======================
 
-} // namespace libtorrent
+} // namespace ltrs

@@ -2,7 +2,7 @@ use std::{fmt::Debug, marker::PhantomData};
 
 use cxx::UniquePtr;
 
-use crate::{ffi::ffi, info_hash::InfoHash};
+use crate::{errors::LtrsError, ffi::ffi, info_hash::InfoHash};
 
 // Owned type
 pub struct AddTorrentParams(UniquePtr<ffi::add_torrent_params>);
@@ -58,8 +58,21 @@ impl<'a> Debug for AddTorrentParamsRef<'a> {
 }
 
 impl AddTorrentParams {
-    pub fn parse_magnet_uri(magnet_uri: &str) -> AddTorrentParams {
-        AddTorrentParams(ffi::lt_parse_magnet_uri(magnet_uri))
+    pub fn make_magnet_uri(&self) -> Result<String, ()> {
+        let result = ffi::lt_add_torrent_params_make_magnet_uri(&self.0);
+        if result.is_empty() {
+            return Err(());
+        }
+        Ok(result)
+    }
+
+    pub fn parse_magnet_uri(magnet_uri: &str) -> Result<AddTorrentParams, LtrsError> {
+        let result = ffi::lt_parse_magnet_uri(magnet_uri);
+        if result.error.category != crate::ffi::error::ffi::ErrorCategory::NoError {
+            return Err(result.error.into());
+        }
+
+        Ok(AddTorrentParams(result.ok))
     }
 
     pub fn load_resume_data(buf: &[u8]) -> AddTorrentParams {

@@ -301,10 +301,18 @@ pub(crate) mod ffi {
         save_path: String,
     }
 
+    struct ParseMagnetUriResult {
+        ok: UniquePtr<add_torrent_params>,
+        error: Error,
+    }
+
     unsafe extern "C++" {
         include!("cpp/lt.h");
 
-        fn lt_parse_magnet_uri(uri: &str) -> UniquePtr<add_torrent_params>;
+        type Error = crate::ffi::error::ffi::Error;
+
+        fn lt_add_torrent_params_make_magnet_uri(params: &add_torrent_params) -> String;
+        fn lt_parse_magnet_uri(uri: &str) -> ParseMagnetUriResult;
 
         // ╔===========================================================================╗
         // ║                                  Session                                  ║
