@@ -8,8 +8,8 @@ pub mod torrent_handle;
 pub mod torrent_status;
 
 mod types {
-    mod download_priority;
-    pub use download_priority::DownloadPriority;
+    pub mod download_priority;
+    pub mod storage_mode;
 }
 
 mod ffi;

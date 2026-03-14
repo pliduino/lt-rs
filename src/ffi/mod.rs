@@ -313,6 +313,7 @@ pub(crate) mod ffi {
 
         fn lt_add_torrent_params_make_magnet_uri(params: &add_torrent_params) -> String;
         fn lt_parse_magnet_uri(uri: &str) -> ParseMagnetUriResult;
+        fn set_add_torrent_params_storage_mode(params: Pin<&mut add_torrent_params>, mode: u8);
 
         // ╔===========================================================================╗
         // ║                                  Session                                  ║

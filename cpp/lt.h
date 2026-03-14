@@ -1,4 +1,5 @@
 #pragma once
+#include "libtorrent/storage_defs.hpp"
 #include "libtorrent/torrent_handle.hpp"
 #include "rust/cxx.h"
 #include <cpp/error.h>
@@ -25,6 +26,9 @@ void lt_set_add_torrent_params_path(lt::add_torrent_params *params,
                                     rust::Str path);
 
 InfoHashCpp lt_add_torrent_params_info_hash(lt::add_torrent_params *params);
+
+void set_add_torrent_params_storage_mode(lt::add_torrent_params &params,
+                                         uint8_t mode);
 
 rust::string
 lt_add_torrent_params_make_magnet_uri(const lt::add_torrent_params &params);
