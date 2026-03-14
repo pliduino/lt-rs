@@ -96,9 +96,9 @@ bitflags::bitflags! {
 
 #[cfg(test)]
 mod tests {
-    use crate::add_torrent_params::AddTorrentParams;
+    // use crate::add_torrent_params::AddTorrentParams;
 
-    pub use super::*;
+    // pub use super::*;
 
     #[test]
     fn add_torrent() {

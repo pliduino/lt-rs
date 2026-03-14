@@ -78,6 +78,10 @@ impl AddTorrentParams {
     pub fn load_resume_data(buf: &[u8]) -> AddTorrentParams {
         AddTorrentParams(unsafe { ffi::lt_read_resume_data(buf) })
     }
+
+    pub fn set_storage_mode(&mut self, storage_mode: crate::types::storage_mode::StorageMode) {
+        ffi::set_add_torrent_params_storage_mode(self.0.pin_mut(), storage_mode.into());
+    }
 }
 
 impl AddTorrentParams {

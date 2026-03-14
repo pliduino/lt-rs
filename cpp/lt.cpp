@@ -29,6 +29,9 @@ InfoHashCpp info_hash_t_to_info_hash_cpp(const lt::info_hash_t &hash) {
   return InfoHashCpp{1, copied_hash};
 }
 
+void set_add_torrent_params_storage_mode(lt::add_torrent_params &params, uint8_t mode) {
+  params.storage_mode = static_cast<lt::storage_mode_t>(mode);
+}
 // ╔===========================================================================╗
 // ║                                  Session                                  ║
 // ╚===========================================================================╝
@@ -50,18 +53,19 @@ ParseMagnetUriResult lt_parse_magnet_uri(rust::Str magnet_uri) {
 
   if (ec) {
     Error e = error_code_to_error(ec);
-    return ParseMagnetUriResult {
+    return ParseMagnetUriResult{
         .ok = nullptr,
-         .error = e,
+        .error = e,
     };
   }
 
-  return ParseMagnetUriResult {
+  return ParseMagnetUriResult{
       .ok = std::make_unique<lt::add_torrent_params>(std::move(params)),
-      .error = Error {
-          ErrorCategory::NoError,
-          0,
-      },
+      .error =
+          Error{
+              ErrorCategory::NoError,
+              0,
+          },
   };
 }
 
@@ -77,9 +81,10 @@ void lt_session_delete_torrent(lt::session &session,
   session.remove_torrent(handle, (lt::remove_flags_t)options);
 }
 
-rust::string lt_add_torrent_params_make_magnet_uri(const lt::add_torrent_params &params) {
-    std::string magnet = make_magnet_uri(params);
-    return rust::string(magnet);
+rust::string
+lt_add_torrent_params_make_magnet_uri(const lt::add_torrent_params &params) {
+  std::string magnet = make_magnet_uri(params);
+  return rust::string(magnet);
 }
 
 void lt_session_post_torrent_updates(lt::session &session, uint32_t flags) {
