@@ -3,7 +3,7 @@ use cxx::UniquePtr;
 use crate::alerts::types::PieceIndex;
 use crate::ffi::torrent_handle::ffi::{
     torrent_handle, torrent_handle_in_session, torrent_handle_info_hashes,
-    torrent_handle_read_piece, torrent_handle_save_resume_data,
+    torrent_handle_make_magnet_uri, torrent_handle_read_piece, torrent_handle_save_resume_data,
 };
 use crate::info_hash::InfoHash;
 use crate::torrent_status::TorrentStatus;
@@ -26,6 +26,14 @@ impl TorrentHandle {
     /// This is a blocking function, unlike [`TorrentHandle::is_valid()`] which returns immediately.
     pub fn in_session(&self) -> bool {
         torrent_handle_in_session(&self.0)
+    }
+
+    pub fn make_magnet_uri(&self) -> Result<String, ()> {
+        let magnet = torrent_handle_make_magnet_uri(&self.0);
+        if magnet.is_empty() {
+            return Err(());
+        }
+        Ok(magnet)
     }
 
     /// [`TorrentHandle::save_resume_data()`] asks libtorrent to generate fast-resume data for

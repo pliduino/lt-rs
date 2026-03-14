@@ -1,5 +1,7 @@
 #include "./lt.h"
 
+#include "cpp/error.h"
+#include "libtorrent/magnet_uri.hpp"
 #include "lt-rs/src/ffi/mod.rs.h"
 #include <libtorrent/read_resume_data.hpp>
 #include <libtorrent/torrent_handle.hpp>
@@ -9,7 +11,7 @@
 
 namespace ltrs {
 InfoHashCpp info_hash_t_to_info_hash_cpp(const lt::info_hash_t &hash) {
-    std::array<std::uint8_t, 32> copied_hash{};
+  std::array<std::uint8_t, 32> copied_hash{};
   if (hash.has_v2()) {
     std::memcpy(copied_hash.data(), hash.v2.data(), copied_hash.size());
     return InfoHashCpp{
@@ -24,10 +26,7 @@ InfoHashCpp info_hash_t_to_info_hash_cpp(const lt::info_hash_t &hash) {
     };
   }
 
-  return InfoHashCpp{
-      1,
-      copied_hash
-  };
+  return InfoHashCpp{1, copied_hash};
 }
 
 // ╔===========================================================================╗
@@ -43,23 +42,44 @@ lt_create_session_with_settings(const lt::settings_pack &settings) {
   return std::make_unique<lt::session>(settings);
 }
 
-std::unique_ptr<lt::add_torrent_params>
-lt_parse_magnet_uri(rust::Str magnet_uri) {
+ParseMagnetUriResult lt_parse_magnet_uri(rust::Str magnet_uri) {
   std::string uri(magnet_uri);
-  auto params = lt::parse_magnet_uri(uri.c_str());
+  lt::error_code ec;
 
-  return std::make_unique<lt::add_torrent_params>(std::move(params));
+  auto params = lt::parse_magnet_uri(uri.c_str(), ec);
+
+  if (ec) {
+    Error e = error_code_to_error(ec);
+    return ParseMagnetUriResult {
+        .ok = nullptr,
+         .error = e,
+    };
+  }
+
+  return ParseMagnetUriResult {
+      .ok = std::make_unique<lt::add_torrent_params>(std::move(params)),
+      .error = Error {
+          ErrorCategory::NoError,
+          0,
+      },
+  };
 }
 
 std::unique_ptr<lt::torrent_handle>
-lt_session_add_torrent(lt::session &session,
-                       lt::add_torrent_params *params) {
+lt_session_add_torrent(lt::session &session, lt::add_torrent_params *params) {
   lt::torrent_handle handle = session.add_torrent(*params);
   return std::make_unique<lt::torrent_handle>(std::move(handle));
 }
 
-void lt_session_delete_torrent(lt::session &session, const lt::torrent_handle &handle, lt::remove_flags_t const options) {
-    session.remove_torrent(handle, (lt::remove_flags_t)options);
+void lt_session_delete_torrent(lt::session &session,
+                               const lt::torrent_handle &handle,
+                               lt::remove_flags_t const options) {
+  session.remove_torrent(handle, (lt::remove_flags_t)options);
+}
+
+rust::string lt_add_torrent_params_make_magnet_uri(const lt::add_torrent_params &params) {
+    std::string magnet = make_magnet_uri(params);
+    return rust::string(magnet);
 }
 
 void lt_session_post_torrent_updates(lt::session &session, uint32_t flags) {
@@ -310,14 +330,12 @@ void lt_set_add_torrent_params_path(lt::add_torrent_params *params,
   params->save_path = path_str;
 }
 
-InfoHashCpp
-lt_add_torrent_params_info_hash(lt::add_torrent_params *params) {
+InfoHashCpp lt_add_torrent_params_info_hash(lt::add_torrent_params *params) {
   const auto hash = params->info_hashes;
   return info_hash_t_to_info_hash_cpp(hash);
 }
 
-rust::Vec<uint8_t>
-lt_write_resume_data_buf(lt::add_torrent_params *params) {
+rust::Vec<uint8_t> lt_write_resume_data_buf(lt::add_torrent_params *params) {
   auto buf = lt::write_resume_data_buf(*params);
   rust::Vec<uint8_t> buf_rust;
 
@@ -379,11 +397,11 @@ void lt_torrent_handle_save_resume_data(const lt::torrent_handle &handle,
 
 void lt_torrent_handle_read_piece(const lt::torrent_handle &handle, int piece) {
   // TODO
-   // handle.read_piece((lt::piece_index_t)piece);
+  // handle.read_piece((lt::piece_index_t)piece);
 
-   // Just so the compiler shuts up for now
-   (void)piece;
-   (void)handle;
+  // Just so the compiler shuts up for now
+  (void)piece;
+  (void)handle;
 }
 
 // ╔===========================================================================╗
@@ -489,7 +507,7 @@ int lt_alert_save_resume_data_failed_error(
     return alert->error.value();
   return 0;
 }
-} // namespace libtorrent
+} // namespace ltrs
 
 namespace boost {
 void throw_exception(const std::exception &e,

@@ -7,4 +7,9 @@ pub mod settings_pack;
 pub mod torrent_handle;
 pub mod torrent_status;
 
+mod types {
+    mod download_priority;
+    pub use download_priority::DownloadPriority;
+}
+
 mod ffi;

@@ -11,6 +11,7 @@ pub(crate) mod ffi {
         SocksError,
         UpnpError,
         Unknown,
+        NoError,
     }
 
     struct Error {

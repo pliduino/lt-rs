@@ -14,5 +14,7 @@ namespace ltrs {
     void torrent_handle_save_resume_data(const lt::torrent_handle &handle,
                                             uint8_t flags);
 
+    rust::string torrent_handle_make_magnet_uri(const lt::torrent_handle &handle);
+
     InfoHashCpp torrent_handle_info_hashes(const lt::torrent_handle &handle);
 }

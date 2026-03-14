@@ -15,6 +15,11 @@ namespace ltrs {
       return std::make_unique<lt::torrent_status>(handle.status());
     }
 
+    rust::string torrent_handle_make_magnet_uri(const lt::torrent_handle &handle) {
+        std::string magnet = make_magnet_uri(handle);
+        return rust::string(magnet);
+    }
+
     void torrent_handle_save_resume_data(const lt::torrent_handle &handle,
                                             uint8_t flags) {
       handle.save_resume_data((lt::resume_data_flags_t)flags);
