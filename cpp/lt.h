@@ -78,6 +78,10 @@ void lt_session_post_torrent_updates(lt::session &session, uint32_t flags);
 std::unique_ptr<lt::torrent_handle>
 lt_torrent_status_handle(lt::torrent_status *status);
 
+rust::Str lt_torrent_status_name(lt::torrent_status const &status);
+
+rust::Str lt_torrent_status_save_path(lt::torrent_status const &status);
+
 uint8_t lt_torrent_status_state(lt::torrent_status *status);
 
 double lt_torrent_status_progress(lt::torrent_status *status);

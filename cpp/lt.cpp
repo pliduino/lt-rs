@@ -418,6 +418,14 @@ lt_torrent_status_handle(lt::torrent_status *status) {
   return std::make_unique<lt::torrent_handle>(status->handle);
 }
 
+rust::Str lt_torrent_status_name(lt::torrent_status const &status) {
+    return rust::Str(status.name);
+}
+
+rust::Str lt_torrent_status_save_path(lt::torrent_status const &status) {
+    return rust::Str(status.save_path);
+}
+
 uint8_t lt_torrent_status_state(lt::torrent_status *status) {
   return status->state;
 }
