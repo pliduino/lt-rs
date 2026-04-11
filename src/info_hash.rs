@@ -96,6 +96,22 @@ impl InfoHash {
     }
 }
 
+impl PartialOrd for InfoHash {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for InfoHash {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        match (self, other) {
+            (InfoHash::V2(h), InfoHash::V2(h2)) => h.cmp(&h2),
+            (InfoHash::V1(h), InfoHash::V1(h2)) => h.cmp(&h2),
+            (InfoHash::V1(_), InfoHash::V2(_)) => std::cmp::Ordering::Less,
+            (InfoHash::V2(_), InfoHash::V1(_)) => std::cmp::Ordering::Greater,
+        }
+    }
+}
 // Convert single hex char to value
 fn hex_char_to_val(c: u8) -> Result<u8, ()> {
     match c {
