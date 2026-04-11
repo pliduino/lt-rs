@@ -32,7 +32,8 @@ impl LtSession {
 
     pub fn add_torrent<'a>(&'a mut self, _params: &AddTorrentParamsRef) -> TorrentHandle {
         unimplemented!()
-        // ffi::lt_session_add_torrent(self.inner.pin_mut(), params.inner()).into()
+        // ffi::lt_session_add_torrent(self.inner.pin_mut(),
+        // params.inner()).into()
     }
 
     pub fn remove_torrent<'a>(&'a mut self, handle: &TorrentHandle, options: RemoveFlags) {
@@ -56,18 +57,21 @@ impl LtSession {
         &self.alerts
     }
 
-    /// This functions instructs the session to post the state_update_alert, containing the status of
-    /// all torrents whose state changed since the last time this function was called.
+    /// This functions instructs the session to post the state_update_alert,
+    /// containing the status of all torrents whose state changed since the
+    /// last time this function was called.
     ///
-    /// Only torrents who has the state subscription flag set will be included. This flag is on by default.
+    /// Only torrents who has the state subscription flag set will be included.
+    /// This flag is on by default.
     pub fn post_torrent_updates(&mut self, flags: StatusFlags) {
         ffi::lt_session_post_torrent_updates(self.inner.pin_mut(), flags.bits());
     }
 
-    /// Marked as unsafe because it takes ownership of the alerts. If the session pops alerts again
-    /// the alerts will become invalid.
+    /// Marked as unsafe because it takes ownership of the alerts. If the
+    /// session pops alerts again the alerts will become invalid.
     ///
-    /// As long [`LtSession::pop_alerts()`] is not called again the alerts are valid
+    /// As long [`LtSession::pop_alerts()`] is not called again the alerts are
+    /// valid
     pub unsafe fn take_alerts(&mut self) -> Vec<Alert> {
         let alerts = mem::replace(&mut self.alerts, Vec::new());
         alerts
@@ -104,8 +108,8 @@ mod tests {
     fn add_torrent() {
         // let mut session = LtSession::new();
         // let params = AddTorrentParams::parse_magnet_uri(
-        //     "magnet:?xt=urn:btih:a4224d0f8de94e5f9633e8f7e6b49d2fa0a1c9f3&dn=ubuntu-16.04.1-desktop-amd64.iso.torrent",
-        // );
+        //     "magnet:?xt=urn:btih:a4224d0f8de94e5f9633e8f7e6b49d2fa0a1c9f3&
+        // dn=ubuntu-16.04.1-desktop-amd64.iso.torrent", );
         // let handle = session.add_torrent(&params);
         // assert!(handle.is_valid());
     }

@@ -17,4 +17,6 @@ namespace ltrs {
     rust::string torrent_handle_make_magnet_uri(const lt::torrent_handle &handle);
 
     InfoHashCpp torrent_handle_info_hashes(const lt::torrent_handle &handle);
+
+    std::unique_ptr<lt::torrent_handle> clone_torrent_handle(const lt::torrent_handle &handle);
 }
