@@ -29,7 +29,7 @@ namespace ltrs {
        handle.read_piece(lt::piece_index_t(piece.inner));
     }
 
-    std::unique_ptr<lt::torrent_handle> clone_torrent_handle(const lt::torrent_handle &handle) {
+    std::unique_ptr<lt::torrent_handle> torrent_handle_clone(const lt::torrent_handle &handle) {
         auto new_handle = std::make_unique<lt::torrent_handle>(lt::torrent_handle(handle));
         return new_handle;
     }
