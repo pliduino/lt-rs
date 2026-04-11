@@ -1,10 +1,7 @@
 use cxx::UniquePtr;
 
 use crate::alerts::types::PieceIndex;
-use crate::ffi::torrent_handle::ffi::{
-    torrent_handle, torrent_handle_in_session, torrent_handle_info_hashes,
-    torrent_handle_make_magnet_uri, torrent_handle_read_piece, torrent_handle_save_resume_data,
-};
+use crate::ffi::torrent_handle::ffi::*;
 use crate::info_hash::InfoHash;
 use crate::torrent_status::TorrentStatus;
 
@@ -21,9 +18,10 @@ impl TorrentHandle {
         self.0.as_ref().unwrap()
     }
 
-    /// Returns true if the torrent is in the session. It returns true before session::remove_torrent() is called, and false afterward.
-    /// ### Note
-    /// This is a blocking function, unlike [`TorrentHandle::is_valid()`] which returns immediately.
+    /// Returns true if the torrent is in the session. It returns true before
+    /// session::remove_torrent() is called, and false afterward. ### Note
+    /// This is a blocking function, unlike [`TorrentHandle::is_valid()`] which
+    /// returns immediately.
     pub fn in_session(&self) -> bool {
         torrent_handle_in_session(&self.0)
     }
@@ -36,25 +34,26 @@ impl TorrentHandle {
         Ok(magnet)
     }
 
-    /// [`TorrentHandle::save_resume_data()`] asks libtorrent to generate fast-resume data for
-    /// this torrent. The fast resume data (stored in an [`AddTorrentParams`]
-    /// struct) can be used to resume a torrent in the next session without
-    /// having to check all files for which pieces have been downloaded. It
-    /// can also be used to save a .torrent file for a [`TorrentHandle`].
+    /// [`TorrentHandle::save_resume_data()`] asks libtorrent to generate
+    /// fast-resume data for this torrent. The fast resume data (stored in
+    /// an [`AddTorrentParams`] struct) can be used to resume a torrent in
+    /// the next session without having to check all files for which pieces
+    /// have been downloaded. It can also be used to save a .torrent file
+    /// for a [`TorrentHandle`].
     ///
-    /// This operation is asynchronous, [`TorrentHandle::save_resume_data()`] will return
-    /// immediately. The resume data is delivered when it's done through a
-    /// [`save_resume_data_alert`].
+    /// This operation is asynchronous, [`TorrentHandle::save_resume_data()`]
+    /// will return immediately. The resume data is delivered when it's done
+    /// through a [`save_resume_data_alert`].
     ///
     /// The operation will fail, and post a save_resume_data_failed_alert
     /// instead, in the following cases:
-    ///
-    //	1. The torrent is in the process of being removed.
-    //	2. No torrent state has changed since the last saving of resume
+    // 	1. The torrent is in the process of being removed.
+    // 	2. No torrent state has changed since the last saving of resume
     //   data, and the only_if_modified flag is set.
     //	  metadata (see libtorrent's metadata-from-peers_ extension)
     ///
-    /// Note that some counters may be outdated by the time you receive the fast resume data
+    /// Note that some counters may be outdated by the time you receive the fast
+    /// resume data
     ///
     /// When saving resume data because of shutting down, make sure not to
     /// remove_torrent() before you receive the save_resume_data_alert.
@@ -67,17 +66,16 @@ impl TorrentHandle {
     ///
     ///.. note::
     ///   It is typically a good idea to save resume data whenever a torrent
-    ///   is completed or paused. If you save resume data for torrents when they are
-    ///   paused, you can accelerate the shutdown process by not saving resume
-    ///   data again for those torrents. Completed torrents should have their
-    ///   resume data saved when they complete and on exit, since their
-    ///   statistics might be updated.
+    ///   is completed or paused. If you save resume data for torrents when they
+    /// are   paused, you can accelerate the shutdown process by not saving
+    /// resume   data again for those torrents. Completed torrents should
+    /// have their   resume data saved when they complete and on exit, since
+    /// their   statistics might be updated.
     ///
     /// Example code to pause and save resume data for all torrents and wait
     /// for the alerts:
-    ///
-    //	extern int outstanding_resume_data; // global counter of outstanding resume data
-    //	std::vector<torrent_handle> handles = ses.get_torrents();
+    //	extern int outstanding_resume_data; // global counter of outstanding resume
+    // data 	std::vector<torrent_handle> handles = ses.get_torrents();
     //	for (torrent_handle const& h : handles) try
     //	{
     //		h.save_resume_data(torrent_handle::only_if_modified);
@@ -115,7 +113,7 @@ impl TorrentHandle {
     //			}
     //
     //			std::ofstream out((rd->params.save_path
-    //				+ "/" + rd->params.name + ".fastresume").c_str()
+    // 				+ "/" + rd->params.name + ".fastresume").c_str()
     //				, std::ios_base::binary);
     //			std::vector<char> buf = write_resume_data_buf(rd->params);
     //			out.write(buf.data(), buf.size());
@@ -134,15 +132,18 @@ impl TorrentHandle {
         torrent_handle_save_resume_data(&self.0, flags.bits());
     }
 
-    /// This function starts an asynchronous read operation of the specified piece from this torrent.
-    /// You must have completed the download of the specified piece before calling this function.
+    /// This function starts an asynchronous read operation of the specified
+    /// piece from this torrent. You must have completed the download of the
+    /// specified piece before calling this function.
     ///
-    /// When the read operation is completed, it is passed back through an alert, [`TorrentAlert::ReadPiece`].
-    /// Since this alert is a response to an explicit call, it will always be posted, regardless of the alert mask.
+    /// When the read operation is completed, it is passed back through an
+    /// alert, [`TorrentAlert::ReadPiece`]. Since this alert is a response
+    /// to an explicit call, it will always be posted, regardless of the alert
+    /// mask.
     ///
     /// ## Notes
-    /// If you read multiple pieces, the read operations are not guaranteed to finish in
-    /// the same order as you initiated them.
+    /// If you read multiple pieces, the read operations are not guaranteed to
+    /// finish in the same order as you initiated them.
     fn read_piece(&self, piece: PieceIndex) {
         torrent_handle_read_piece(&self.0, piece);
     }
@@ -151,10 +152,17 @@ impl TorrentHandle {
         // torrent_handle_status(self.0)
         unimplemented!()
     }
-    /// Returns the info-hash(es) of the torrent. If this handle is to a torrent that hasn't loaded
-    /// yet (for instance by being added) by a URL, the returned value is undefined.
+    /// Returns the info-hash(es) of the torrent. If this handle is to a torrent
+    /// that hasn't loaded yet (for instance by being added) by a URL, the
+    /// returned value is undefined.
     pub fn info_hashes(&self) -> InfoHash {
         torrent_handle_info_hashes(&self.0).into()
+    }
+}
+
+impl Clone for TorrentHandle {
+    fn clone(&self) -> Self {
+        Self(torrent_handle_clone(&self.0))
     }
 }
 

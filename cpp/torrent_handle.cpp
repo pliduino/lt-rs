@@ -28,4 +28,9 @@ namespace ltrs {
     void torrent_handle_read_piece(const lt::torrent_handle &handle, PieceIndex piece) {
        handle.read_piece(lt::piece_index_t(piece.inner));
     }
+
+    std::unique_ptr<lt::torrent_handle> clone_torrent_handle(const lt::torrent_handle &handle) {
+        auto new_handle = std::make_unique<lt::torrent_handle>(lt::torrent_handle(handle));
+        return new_handle;
+    }
 }
