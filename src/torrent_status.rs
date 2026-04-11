@@ -5,13 +5,14 @@ use cxx::CxxVector;
 use crate::{
     alerts::TorrentState,
     ffi::ffi::{
-        lt_torrent_status_handle, lt_torrent_status_progress, lt_torrent_status_state,
-        torrent_status,
+        lt_torrent_status_handle, lt_torrent_status_name, lt_torrent_status_progress,
+        lt_torrent_status_save_path, lt_torrent_status_state, torrent_status,
     },
     torrent_handle::TorrentHandle,
 };
 
-/// Holds a snapshot of the status of a torrent, as queried by [`TorrentHandle::status()`].
+/// Holds a snapshot of the status of a torrent, as queried by
+/// [`TorrentHandle::status()`].
 pub struct TorrentStatus {
     pub handle: TorrentHandle,
     pub state: TorrentState,
@@ -54,6 +55,14 @@ impl<'a> From<&'a torrent_status> for TorrentStatusRef<'a> {
 }
 
 impl<'a> TorrentStatusRef<'a> {
+    pub fn name(&self) -> &str {
+        lt_torrent_status_name(unsafe { self.0.as_ref_unchecked() })
+    }
+
+    pub fn save_path(&self) -> &str {
+        lt_torrent_status_save_path(unsafe { self.0.as_ref_unchecked() })
+    }
+
     pub fn handle(&self) -> TorrentHandle {
         TorrentHandle::from_inner(unsafe { lt_torrent_status_handle(self.0) })
     }

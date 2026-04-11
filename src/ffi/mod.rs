@@ -368,6 +368,8 @@ pub(crate) mod ffi {
         ) -> UniquePtr<torrent_handle>;
         unsafe fn lt_torrent_status_state(status: *mut torrent_status) -> u8;
         unsafe fn lt_torrent_status_progress(status: *mut torrent_status) -> f64;
+        fn lt_torrent_status_name(status: &torrent_status) -> &str;
+        fn lt_torrent_status_save_path(status: &torrent_status) -> &str;
 
         // ╔===========================================================================╗
         // ║                                  Alerts                                   ║
