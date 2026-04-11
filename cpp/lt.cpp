@@ -77,7 +77,7 @@ lt_session_add_torrent(lt::session &session, lt::add_torrent_params *params) {
 
 void lt_session_delete_torrent(lt::session &session,
                                const lt::torrent_handle &handle,
-                               lt::remove_flags_t const options) {
+                               lt::remove_flags_t options) {
   session.remove_torrent(handle, (lt::remove_flags_t)options);
 }
 
