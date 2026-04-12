@@ -4,10 +4,7 @@ use cxx::CxxVector;
 
 use crate::{
     alerts::TorrentState,
-    ffi::ffi::{
-        lt_torrent_status_handle, lt_torrent_status_name, lt_torrent_status_progress,
-        lt_torrent_status_save_path, lt_torrent_status_state, torrent_status,
-    },
+    ffi::ffi::*,
     torrent_handle::TorrentHandle,
 };
 
