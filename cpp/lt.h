@@ -86,15 +86,15 @@ uint8_t lt_torrent_status_state(lt::torrent_status *status);
 
 double lt_torrent_status_progress(lt::torrent_status *status);
 
-int64_t lt_torrent_status_all_time_download(lt::torrent_status *status);
+int64_t lt_torrent_status_all_time_download(lt::torrent_status const &status);
 
-int64_t lt_torrent_status_all_time_upload(lt::torrent_status *status);
+int64_t lt_torrent_status_all_time_upload(lt::torrent_status const &status);
 
-int64_t lt_torrent_status_total(lt::torrent_status *status);
+int64_t lt_torrent_status_total(lt::torrent_status const &status);
 
-int32_t lt_torrent_status_download_rate(lt::torrent_status *status);
+int32_t lt_torrent_status_download_rate(lt::torrent_status const &status);
 
-int32_t lt_torrent_status_upload_rate(lt::torrent_status *status);
+int32_t lt_torrent_status_upload_rate(lt::torrent_status const &status);
 
 
 // ╔===========================================================================╗
