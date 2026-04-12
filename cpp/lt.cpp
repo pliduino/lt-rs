@@ -435,15 +435,15 @@ double lt_torrent_status_progress(lt::torrent_status *status) {
 }
 
 int64_t lt_torrent_status_all_time_download(lt::torrent_status *status) {
-  return status->downloaded_bytes;
+  return status->all_time_download;
 }
 
 int64_t lt_torrent_status_all_time_upload(lt::torrent_status *status) {
-  return status->uploaded_bytes;
+  return status->all_time_upload;
 }
 
 int64_t lt_torrent_status_total(lt::torrent_status *status) {
-  return status->total_size;
+  return status->total;
 }
 
 int32_t lt_torrent_status_download_rate(lt::torrent_status *status) {
