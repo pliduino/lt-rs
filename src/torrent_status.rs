@@ -56,7 +56,22 @@ impl<'a> From<&'a torrent_status> for TorrentStatusRef<'a> {
 
 impl<'a> TorrentStatusRef<'a> {
     pub fn name(&self) -> &str {
-        lt_torrent_status_name(unsafe { self.0.as_ref_unchecked() })
+        unsafe { lt_torrent_status_name(self.0.as_ref_unchecked()) }
+    }
+    pub fn all_time_download(&self) -> i64 {
+        unsafe { lt_torrent_status_all_time_download(self.0.as_ref_unchecked()) }
+    }
+    pub fn all_time_upload(&self) -> i64 {
+        unsafe { lt_torrent_status_all_time_upload(self.0.as_ref_unchecked()) }
+    }
+    pub fn total(&self) -> i64 {
+        unsafe { lt_torrent_status_total(self.0.as_ref_unchecked()) }
+    }
+    pub fn download_rate(&self) -> i32 {
+        unsafe { lt_torrent_status_download_rate(self.0.as_ref_unchecked()) }
+    }
+    pub fn upload_rate(&self) -> i32 {
+        unsafe { lt_torrent_status_upload_rate(self.0.as_ref_unchecked()) }
     }
 
     pub fn save_path(&self) -> &str {

@@ -434,6 +434,26 @@ double lt_torrent_status_progress(lt::torrent_status *status) {
   return status->progress;
 }
 
+int64_t lt_torrent_status_all_time_download(lt::torrent_status *status) {
+  return status->downloaded_bytes;
+}
+
+int64_t lt_torrent_status_all_time_upload(lt::torrent_status *status) {
+  return status->uploaded_bytes;
+}
+
+int64_t lt_torrent_status_total(lt::torrent_status *status) {
+  return status->total_size;
+}
+
+int32_t lt_torrent_status_download_rate(lt::torrent_status *status) {
+  return status->download_rate;
+}
+
+int32_t lt_torrent_status_upload_rate(lt::torrent_status *status) {
+  return status->upload_rate;
+}
+
 // ╔===========================================================================╗
 // ║                                  Alerts                                   ║
 // ╚===========================================================================╝

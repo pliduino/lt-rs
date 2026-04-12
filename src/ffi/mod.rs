@@ -371,6 +371,12 @@ pub(crate) mod ffi {
         fn lt_torrent_status_name(status: &torrent_status) -> &str;
         fn lt_torrent_status_save_path(status: &torrent_status) -> &str;
 
+        fn lt_torrent_status_all_time_download(status: &torrent_status) -> i64;
+        fn lt_torrent_status_all_time_upload(status: &torrent_status) -> i64;
+        fn lt_torrent_status_total(status: &torrent_status) -> i64;
+        fn lt_torrent_status_download_rate(status: &torrent_status) -> i32;
+        fn lt_torrent_status_upload_rate(status: &torrent_status) -> i32;
+
         // ╔===========================================================================╗
         // ║                                  Alerts                                   ║
         // ╚===========================================================================╝
