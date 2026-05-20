@@ -335,6 +335,9 @@ void lt_set_add_torrent_params_path(lt::add_torrent_params *params,
   params->save_path = path_str;
 }
 
+void lt_set_add_torrent_params_total_uploaded(lt::add_torrent_params *params, int64_t val) { params->total_uploaded = val; }
+void lt_set_add_torrent_params_total_downloaded(lt::add_torrent_params *params, int64_t val) { params->total_downloaded = val; }
+
 InfoHashCpp lt_add_torrent_params_info_hash(lt::add_torrent_params *params) {
   const auto hash = params->info_hashes;
   return info_hash_t_to_info_hash_cpp(hash);
@@ -540,6 +543,87 @@ int lt_alert_save_resume_data_failed_error(
     return alert->error.value();
   return 0;
 }
+
+rust::Vec<InfoHashCpp> lt_session_get_torrent_hashes(lt::session &session) {
+    auto handles = session.get_torrents();
+    rust::Vec<InfoHashCpp> out;
+    out.reserve(handles.size());
+    for (auto &h : handles)
+        out.push_back(info_hash_t_to_info_hash_cpp(h.info_hashes()));
+    return out;
+}
+
+std::unique_ptr<lt::torrent_handle> lt_session_find_torrent(lt::session &session, rust::Str info_hash_hex) {
+    std::string hex(info_hash_hex);
+    auto parse_hex = [&](auto &hash, size_t len) {
+        for (size_t i = 0; i < len && i * 2 + 1 < hex.size(); ++i) {
+            unsigned int byte;
+            std::sscanf(hex.c_str() + i * 2, "%02x", &byte);
+            hash[i] = static_cast<unsigned char>(byte);
+        }
+    };
+    lt::torrent_handle th;
+    if (hex.size() == 64) {
+        lt::sha256_hash h;
+        parse_hex(h, 32);
+        th = session.find_torrent(lt::info_hash_t(h));
+    } else {
+        lt::sha1_hash h;
+        parse_hex(h, 20);
+        th = session.find_torrent(h);
+    }
+    if (!th.is_valid()) return nullptr;
+    return std::make_unique<lt::torrent_handle>(th);
+}
+
+rust::Vec<uint8_t> lt_session_save_state(lt::session &session) {
+    auto sp = static_cast<lt::session_handle&>(session).session_state();
+    auto buf = lt::write_session_params_buf(sp);
+    rust::Vec<uint8_t> out;
+    out.reserve(buf.size());
+    for (unsigned char c : buf) out.push_back(c);
+    return out;
+}
+
+void lt_session_load_state(lt::session &session, rust::Slice<const uint8_t> data) {
+    auto sp = lt::read_session_params(
+        lt::span<const char>(reinterpret_cast<const char*>(data.data()), data.size()));
+    static_cast<lt::session_handle&>(session).apply_settings(sp.settings);
+}
+
+TorrentStatusSnapshot lt_torrent_status_snapshot(const lt::torrent_status &s) {
+    TorrentStatusSnapshot snap;
+    snap.download_rate      = s.download_rate;
+    snap.upload_rate        = s.upload_rate;
+    snap.all_time_download  = s.all_time_download;
+    snap.all_time_upload    = s.all_time_upload;
+    snap.total_done         = s.total_done;
+    snap.total_wanted       = s.total_wanted;
+    snap.total_size         = s.total;
+    snap.num_peers          = s.num_peers;
+    snap.num_seeds          = s.num_seeds;
+    snap.num_complete       = s.num_complete;
+    snap.num_incomplete     = s.num_incomplete;
+    snap.progress           = s.progress;
+    snap.state              = static_cast<uint8_t>(s.state);
+    snap.is_seeding         = s.is_seeding;
+    snap.is_finished        = s.is_finished;
+    snap.is_paused          = static_cast<bool>(s.flags & lt::torrent_flags::paused);
+    snap.save_path          = rust::String(s.save_path);
+    snap.name               = rust::String(s.name);
+    if (s.pieces.size() > 0) {
+        size_t nbytes = (s.pieces.size() + 7) / 8;
+        snap.pieces.reserve(nbytes);
+        for (size_t i = 0; i < nbytes; ++i) {
+            uint8_t byte = 0;
+            for (size_t b = 0; b < 8 && i * 8 + b < s.pieces.size(); ++b)
+                if (s.pieces[lt::piece_index_t(static_cast<int>(i * 8 + b))]) byte |= (1u << b);
+            snap.pieces.push_back(byte);
+        }
+    }
+    return snap;
+}
+
 } // namespace ltrs
 
 namespace boost {
@@ -548,3 +632,5 @@ void throw_exception(const std::exception &e,
   throw e;
 }
 } // namespace boost
+
+// Removed the old closing brace above - these are additions

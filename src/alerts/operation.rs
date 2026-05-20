@@ -1,10 +1,9 @@
 /// These constants are used to identify the operation that failed, causing a
 /// peer to disconnect
-#[cfg_attr(feature = "safe_enums", derive(num_enum::FromPrimitive))]
+#[derive(num_enum::FromPrimitive)]
 #[repr(u8)]
 pub enum Operation {
     /// The error was unexpected and it is unknown which operation caused it
-    #[cfg(feature = "safe_enums")]
     #[num_enum(default)]
     Unknown,
     /// This is used when the bittorrent logic
@@ -151,9 +150,3 @@ pub enum Operation {
     FileTruncate,
 }
 
-#[cfg(not(feature = "safe_enums"))]
-impl From<u8> for Operation {
-    fn from(v: u8) -> Self {
-        unsafe { std::mem::transmute(v) }
-    }
-}

@@ -17,8 +17,20 @@ pub struct LtSession {
 
 impl LtSession {
     pub fn new() -> LtSession {
+        // Default alert mask covers what most applications need.
+        // libtorrent's default only covers status and error; storage, tracker, and peer alerts need opt-in.
+        use crate::alerts::AlertCategory;
+        let mask = AlertCategory::Error
+            | AlertCategory::Status
+            | AlertCategory::Storage
+            | AlertCategory::Tracker
+            | AlertCategory::Connect
+            | AlertCategory::Peer
+            | AlertCategory::Dht;
+        let mut settings = crate::settings_pack::SettingsPack::new();
+        settings.set_alert_mask(mask);
         LtSession {
-            inner: ffi::lt_create_session(),
+            inner: ffi::lt_create_session_with_settings(settings.inner()),
             alerts: Vec::new(),
         }
     }
@@ -65,6 +77,44 @@ impl LtSession {
     /// This flag is on by default.
     pub fn post_torrent_updates(&mut self, flags: StatusFlags) {
         ffi::lt_session_post_torrent_updates(self.inner.pin_mut(), flags.bits());
+    }
+
+    /// Returns the info-hashes of all torrents currently in the session.
+    pub fn get_torrent_hashes(&mut self) -> Vec<crate::info_hash::InfoHash> {
+        ffi::lt_session_get_torrent_hashes(self.inner.pin_mut())
+            .into_iter()
+            .map(Into::into)
+            .collect()
+    }
+
+    /// Look up a torrent handle by its hex info-hash string (40-char v1 hash).
+    /// Returns None if the torrent is not in the session.
+    pub fn find_torrent(&mut self, info_hash_hex: &str) -> Option<crate::torrent_handle::TorrentHandle> {
+        let h = ffi::lt_session_find_torrent(self.inner.pin_mut(), info_hash_hex);
+        if h.is_null() { return None; }
+        Some(crate::torrent_handle::TorrentHandle::from_inner(h))
+    }
+
+    /// Apply an IP filter to the session. All future connections from blocked
+    /// ranges will be rejected.
+    pub fn set_ip_filter(&mut self, filter: &crate::ip_filter::IpFilter) {
+        ffi::lt_session_set_ip_filter(self.inner.pin_mut(), filter.inner());
+    }
+
+    pub fn get_ip_filter(&mut self) -> crate::ip_filter::IpFilter {
+        crate::ip_filter::IpFilter::from_inner(
+            ffi::lt_session_get_ip_filter(self.inner.pin_mut())
+        )
+    }
+
+    /// Save session state (DHT routing table, settings) to bytes for persistence.
+    pub fn save_state(&mut self) -> Vec<u8> {
+        ffi::lt_session_save_state(self.inner.pin_mut())
+    }
+
+    /// Restore session state from previously saved bytes.
+    pub fn load_state(&mut self, data: &[u8]) {
+        ffi::lt_session_load_state(self.inner.pin_mut(), data);
     }
 
     /// Marked as unsafe because it takes ownership of the alerts. If the

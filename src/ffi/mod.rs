@@ -289,6 +289,29 @@ pub(crate) mod ffi {
     }
 
     impl UniquePtr<torrent_status> {}
+
+    struct TorrentStatusSnapshot {
+        download_rate:     i32,
+        upload_rate:       i32,
+        all_time_download: i64,
+        all_time_upload:   i64,
+        total_done:        i64,
+        total_wanted:      i64,
+        total_size:        i64,
+        num_peers:         i32,
+        num_seeds:         i32,
+        num_complete:      i32,
+        num_incomplete:    i32,
+        progress:          f32,
+        state:             u8,
+        is_seeding:        bool,
+        is_finished:       bool,
+        is_paused:         bool,
+        save_path:         String,
+        name:              String,
+        pieces:            Vec<u8>,
+    }
+
     impl CxxVector<torrent_status> {}
 
     struct AddTorrentParamsValues {
@@ -308,6 +331,10 @@ pub(crate) mod ffi {
 
     unsafe extern "C++" {
         include!("cpp/lt.h");
+
+        type IpFilterWrapper;
+        type FileStorageWrapper;
+        type CreateTorrentWrapper;
 
         type Error = crate::ffi::error::ffi::Error;
 
@@ -338,6 +365,12 @@ pub(crate) mod ffi {
 
         fn lt_session_pop_alerts(session: Pin<&mut session>) -> Vec<CastAlertRaw>;
         fn lt_session_post_torrent_updates(session: Pin<&mut session>, flags: u32);
+        fn lt_session_get_torrent_hashes(session: Pin<&mut session>) -> Vec<InfoHashCpp>;
+        fn lt_session_find_torrent(session: Pin<&mut session>, info_hash_hex: &str) -> UniquePtr<torrent_handle>;
+        fn lt_session_save_state(session: Pin<&mut session>) -> Vec<u8>;
+        fn lt_session_load_state(session: Pin<&mut session>, data: &[u8]);
+        fn lt_session_set_ip_filter(session: Pin<&mut session>, f: &IpFilterWrapper);
+        fn lt_session_get_ip_filter(session: Pin<&mut session>) -> UniquePtr<IpFilterWrapper>;
 
         // ╔===========================================================================╗
         // ║                               Settings Pack                               ║
@@ -351,6 +384,8 @@ pub(crate) mod ffi {
         // ╚===========================================================================╝
 
         unsafe fn lt_set_add_torrent_params_path(params: *mut add_torrent_params, path: &str);
+        unsafe fn lt_set_add_torrent_params_total_uploaded(params: *mut add_torrent_params, val: i64);
+        unsafe fn lt_set_add_torrent_params_total_downloaded(params: *mut add_torrent_params, val: i64);
         unsafe fn lt_add_torrent_params_info_hash(params: *mut add_torrent_params) -> InfoHashCpp;
         unsafe fn lt_write_resume_data_buf(params: *mut add_torrent_params) -> Vec<u8>;
         unsafe fn lt_read_resume_data(buf: &[u8]) -> UniquePtr<add_torrent_params>;
@@ -376,6 +411,23 @@ pub(crate) mod ffi {
         fn lt_torrent_status_total(status: &torrent_status) -> i64;
         fn lt_torrent_status_download_rate(status: &torrent_status) -> i32;
         fn lt_torrent_status_upload_rate(status: &torrent_status) -> i32;
+        fn lt_torrent_status_snapshot(status: &torrent_status) -> TorrentStatusSnapshot;
+
+        fn lt_ip_filter_new() -> UniquePtr<IpFilterWrapper>;
+        fn lt_ip_filter_add_rule(f: Pin<&mut IpFilterWrapper>, start: &str, end: &str, flags: u32);
+        fn lt_ip_filter_access(f: &IpFilterWrapper, addr: &str) -> u32;
+
+        fn lt_file_storage_new() -> UniquePtr<FileStorageWrapper>;
+        fn lt_add_files(fs: Pin<&mut FileStorageWrapper>, path: &str);
+        fn lt_file_storage_num_files(fs: &FileStorageWrapper) -> i32;
+        fn lt_file_storage_total_size(fs: &FileStorageWrapper) -> i64;
+        fn lt_create_torrent_new(fs: Pin<&mut FileStorageWrapper>, piece_size: i32) -> UniquePtr<CreateTorrentWrapper>;
+        fn lt_create_torrent_add_tracker(ct: Pin<&mut CreateTorrentWrapper>, url: &str, tier: i32);
+        fn lt_create_torrent_set_comment(ct: Pin<&mut CreateTorrentWrapper>, comment: &str);
+        fn lt_create_torrent_set_creator(ct: Pin<&mut CreateTorrentWrapper>, creator: &str);
+        fn lt_create_torrent_set_priv(ct: Pin<&mut CreateTorrentWrapper>, priv_flag: bool);
+        fn lt_set_piece_hashes(ct: Pin<&mut CreateTorrentWrapper>, base_path: &str) -> String;
+        fn lt_create_torrent_generate(ct: Pin<&mut CreateTorrentWrapper>) -> Vec<u8>;
 
         // ╔===========================================================================╗
         // ║                                  Alerts                                   ║

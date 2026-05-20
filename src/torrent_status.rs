@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use cxx::CxxVector;
+use cxx::{CxxVector, UniquePtr};
 
 use crate::{
     alerts::TorrentState,
@@ -8,12 +8,73 @@ use crate::{
     torrent_handle::TorrentHandle,
 };
 
-/// Holds a snapshot of the status of a torrent, as queried by
-/// [`TorrentHandle::status()`].
+/// Full torrent status snapshot — all fields in one FFI call.
+/// Returned by [`TorrentHandle::status()`].
 pub struct TorrentStatus {
-    pub handle: TorrentHandle,
-    pub state: TorrentState,
-    pub progress: f64,
+    pub download_rate:     i32,
+    pub upload_rate:       i32,
+    pub all_time_download: i64,
+    pub all_time_upload:   i64,
+    pub total_done:        i64,
+    pub total_wanted:      i64,
+    pub total_size:        i64,
+    pub num_peers:         i32,
+    pub num_seeds:         i32,
+    pub num_complete:      i32,
+    pub num_incomplete:    i32,
+    pub progress:          f32,
+    pub state:             TorrentState,
+    pub is_seeding:        bool,
+    pub is_finished:       bool,
+    pub is_paused:         bool,
+    /// Packed bitfield: bit N=1 means piece N is downloaded. Use `has_piece(n)`.
+    pub pieces:            Vec<u8>,
+    pub save_path:         String,
+    pub name:              String,
+}
+
+impl TorrentStatus {
+    pub(crate) fn from_inner(inner: UniquePtr<torrent_status>) -> Self {
+        let snap = lt_torrent_status_snapshot(inner.as_ref().unwrap());
+        Self::from_snapshot(snap)
+    }
+
+    pub(crate) fn from_snapshot(s: TorrentStatusSnapshot) -> Self {
+        let state = TorrentState::from_u8(s.state);
+        TorrentStatus {
+            download_rate:     s.download_rate,
+            upload_rate:       s.upload_rate,
+            all_time_download: s.all_time_download,
+            all_time_upload:   s.all_time_upload,
+            total_done:        s.total_done,
+            total_wanted:      s.total_wanted,
+            total_size:        s.total_size,
+            num_peers:         s.num_peers,
+            num_seeds:         s.num_seeds,
+            num_complete:      s.num_complete,
+            num_incomplete:    s.num_incomplete,
+            progress:          s.progress,
+            state,
+            is_seeding:        s.is_seeding,
+            is_finished:       s.is_finished,
+            is_paused:         s.is_paused,
+            save_path:         s.save_path,
+            name:              s.name,
+            pieces:            s.pieces,
+        }
+    }
+
+    /// Returns true if piece `idx` has been downloaded.
+    pub fn has_piece(&self, idx: usize) -> bool {
+        let byte = idx / 8;
+        let bit  = idx % 8;
+        self.pieces.get(byte).map(|&b| b & (1 << bit) != 0).unwrap_or(false)
+    }
+
+    /// Returns the count of downloaded pieces.
+    pub fn num_pieces_done(&self) -> usize {
+        self.pieces.iter().map(|b| b.count_ones() as usize).sum()
+    }
 }
 
 /// Reference to C++ vector
@@ -52,45 +113,12 @@ impl<'a> From<&'a torrent_status> for TorrentStatusRef<'a> {
 }
 
 impl<'a> TorrentStatusRef<'a> {
-    pub fn name(&self) -> &str {
-        unsafe { lt_torrent_status_name(self.0.as_ref_unchecked()) }
-    }
-    pub fn all_time_download(&self) -> i64 {
-        unsafe { lt_torrent_status_all_time_download(self.0.as_ref_unchecked()) }
-    }
-    pub fn all_time_upload(&self) -> i64 {
-        unsafe { lt_torrent_status_all_time_upload(self.0.as_ref_unchecked()) }
-    }
-    pub fn total(&self) -> i64 {
-        unsafe { lt_torrent_status_total(self.0.as_ref_unchecked()) }
-    }
-    pub fn download_rate(&self) -> i32 {
-        unsafe { lt_torrent_status_download_rate(self.0.as_ref_unchecked()) }
-    }
-    pub fn upload_rate(&self) -> i32 {
-        unsafe { lt_torrent_status_upload_rate(self.0.as_ref_unchecked()) }
-    }
-
-    pub fn save_path(&self) -> &str {
-        lt_torrent_status_save_path(unsafe { self.0.as_ref_unchecked() })
+    pub fn to_status(&self) -> TorrentStatus {
+        let snap = lt_torrent_status_snapshot(unsafe { self.0.as_ref_unchecked() });
+        TorrentStatus::from_snapshot(snap)
     }
 
     pub fn handle(&self) -> TorrentHandle {
         TorrentHandle::from_inner(unsafe { lt_torrent_status_handle(self.0) })
-    }
-
-    pub fn state(&self) -> TorrentState {
-        let state = unsafe { lt_torrent_status_state(self.0) };
-        cfg_if::cfg_if! {
-            if #[cfg(feature = "safe_enums")] {
-                TorrentState::from(state)
-            } else {
-                unsafe { std::mem::transmute(state) }
-            }
-        }
-    }
-
-    pub fn progress(&self) -> f64 {
-        unsafe { lt_torrent_status_progress(self.0) }
     }
 }
