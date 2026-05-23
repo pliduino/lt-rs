@@ -1,0 +1,9 @@
+[env]
+# libtorrent sessions conflict if run on the same port; serialize tests
+# to avoid spurious bind failures and alert ordering issues.
+RUST_TEST_THREADS = "1"
+
+[profile.test]
+# Enable a bit of optimization so test binary runs faster at the cost of
+# slightly longer compile time (still far less than a full release build).
+opt-level = 1

@@ -17,6 +17,13 @@ pub enum InfoHash {
 }
 
 impl InfoHash {
+    pub fn as_hex(&self) -> String {
+        match self {
+            InfoHash::V1(v1) => v1.iter().map(|b| format!("{:02x}", b)).collect(),
+            InfoHash::V2(v2) => v2.iter().map(|b| format!("{:02x}", b)).collect(),
+        }
+    }
+
     pub fn as_base64(&self) -> String {
         match self {
             InfoHash::V1(v1) => BASE64_URL_SAFE_NO_PAD.encode(v1),
