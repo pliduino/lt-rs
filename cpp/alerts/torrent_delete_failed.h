@@ -1,6 +1,6 @@
 #pragma once
 #include <libtorrent/alert_types.hpp>
-#include "lt-rs/src/ffi/mod.rs.h"
+#include "libtorrent-rs/src/ffi/mod.rs.h"
 #include "cpp/error.h"
 
 namespace ltrs {

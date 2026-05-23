@@ -1,5 +1,5 @@
 #include "./hash_failed.h"
-#include "lt-rs/src/ffi/mod.rs.h"
+#include "libtorrent-rs/src/ffi/mod.rs.h"
 
 namespace ltrs {
 

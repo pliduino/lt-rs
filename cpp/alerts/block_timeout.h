@@ -1,5 +1,5 @@
 #pragma once
-#include "lt-rs/src/ffi/mod.rs.h"
+#include "libtorrent-rs/src/ffi/mod.rs.h"
 #include <libtorrent/alert_types.hpp>
 
 namespace ltrs {

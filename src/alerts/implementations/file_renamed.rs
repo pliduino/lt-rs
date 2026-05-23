@@ -22,9 +22,12 @@ impl FileRenamedAlert {
         self.as_torrent_alert().message()
     }
 
+    /// The file index within the torrent that was renamed.
     #[inline(always)]
-    pub fn index(&self) {
-        unimplemented!()
+    pub fn index(&self) -> i32 {
+        unsafe {
+            crate::ffi::alerts::file_renamed::ffi::file_renamed_alert_get_index(self.0)
+        }
     }
 
     pub fn old_name<'a>(&'a self) -> &'a str {
