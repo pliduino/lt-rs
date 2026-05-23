@@ -89,6 +89,14 @@ impl AddTorrentParams {
         unsafe { ffi::lt_set_add_torrent_params_path(self.0.as_mut_ptr(), path) };
     }
 
+    pub fn set_total_uploaded(&mut self, val: i64) {
+        unsafe { ffi::lt_set_add_torrent_params_total_uploaded(self.0.as_mut_ptr(), val) };
+    }
+
+    pub fn set_total_downloaded(&mut self, val: i64) {
+        unsafe { ffi::lt_set_add_torrent_params_total_downloaded(self.0.as_mut_ptr(), val) };
+    }
+
     pub fn get_info_hash(&self) -> InfoHash {
         unsafe { ffi::lt_add_torrent_params_info_hash(self.0.as_mut_ptr()).into() }
     }
