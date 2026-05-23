@@ -1,5 +1,5 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[cfg_attr(feature = "safe_enums", derive(num_enum::FromPrimitive))]
+#[derive(num_enum::FromPrimitive)]
 #[repr(u8)]
 pub enum Event {
     None = 0,
@@ -7,7 +7,6 @@ pub enum Event {
     Started,
     Stopped,
     Paused,
-    #[cfg(feature = "safe_enums")]
     #[num_enum(default)]
     Unknown,
 }
@@ -25,7 +24,7 @@ impl PieceIndex {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[cfg_attr(feature = "safe_enums", derive(num_enum::FromPrimitive))]
+#[derive(num_enum::FromPrimitive)]
 #[repr(u8)]
 pub enum SocketType {
     Tcp = 0,
@@ -37,30 +36,27 @@ pub enum SocketType {
     Socks5Ssl,
     HttpSsl,
     UtpSsl,
-    #[cfg(feature = "safe_enums")]
     #[num_enum(default)]
     Unknown,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[cfg_attr(feature = "safe_enums", derive(num_enum::FromPrimitive))]
+#[derive(num_enum::FromPrimitive)]
 #[repr(u8)]
 pub enum ConnectionType {
     BitTorrent = 0,
     UrlSeed,
     HttpSeed,
-    #[cfg(feature = "safe_enums")]
     #[num_enum(default)]
     Unknown,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[cfg_attr(feature = "safe_enums", derive(num_enum::FromPrimitive))]
+#[derive(num_enum::FromPrimitive)]
 #[repr(u8)]
 pub enum Direction {
     In = 0,
     Out,
-    #[cfg(feature = "safe_enums")]
     #[num_enum(default)]
     Unknown,
 }
@@ -69,7 +65,7 @@ pub enum Direction {
 /// all reasons caused by the peer sending unexpected data
 /// are 256 and up.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[cfg_attr(feature = "safe_enums", derive(num_enum::FromPrimitive))]
+#[derive(num_enum::FromPrimitive)]
 #[repr(u16)]
 pub enum CloseReason {
     /// No reason specified. Generic close.
@@ -158,21 +154,13 @@ pub enum CloseReason {
 
     PexMessageTooBig,
     PexTooFrequent,
-
-    #[cfg(feature = "safe_enums")]
     #[num_enum(default)]
     Unknown,
 }
 
 impl CloseReason {
     pub(crate) fn from_u16(value: u16) -> Self {
-        cfg_if::cfg_if! {
-            if #[cfg(feature = "safe_enums")] {
-                value.into()
-            } else {
-                unsafe { std::mem::transmute(value) }
-            }
-        }
+        value.into()
     }
 }
 
@@ -185,48 +173,24 @@ impl PartialEq for PeerRequest {
 
 impl Direction {
     pub(crate) fn from_u8(value: u8) -> Self {
-        cfg_if::cfg_if! {
-            if #[cfg(feature = "safe_enums")] {
-                value.into()
-            } else {
-                unsafe { std::mem::transmute(value) }
-            }
-        }
+        value.into()
     }
 }
 
 impl ConnectionType {
     pub(crate) fn from_u8(value: u8) -> Self {
-        cfg_if::cfg_if! {
-            if #[cfg(feature = "safe_enums")] {
-                value.into()
-            } else {
-                unsafe { std::mem::transmute(value) }
-            }
-        }
+        value.into()
     }
 }
 
 impl SocketType {
     pub(crate) fn from_u8(value: u8) -> Self {
-        cfg_if::cfg_if! {
-            if #[cfg(feature = "safe_enums")] {
-                value.into()
-            } else {
-                unsafe { std::mem::transmute(value) }
-            }
-        }
+        value.into()
     }
 }
 
 impl Event {
     pub(crate) fn from_u8(value: u8) -> Self {
-        cfg_if::cfg_if! {
-            if #[cfg(feature = "safe_enums")] {
-                value.into()
-            } else {
-                unsafe { std::mem::transmute(value) }
-            }
-        }
+        value.into()
     }
 }

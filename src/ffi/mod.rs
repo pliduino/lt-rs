@@ -289,7 +289,47 @@ pub(crate) mod ffi {
     }
 
     impl UniquePtr<torrent_status> {}
+
+    struct TorrentStatusSnapshot {
+        download_rate: i32,
+        upload_rate: i32,
+        all_time_download: i64,
+        all_time_upload: i64,
+        total_done: i64,
+        total_wanted: i64,
+        total_size: i64,
+        num_peers: i32,
+        num_seeds: i32,
+        num_complete: i32,
+        num_incomplete: i32,
+        progress: f32,
+        state: u8,
+        is_seeding: bool,
+        is_finished: bool,
+        is_paused: bool,
+        save_path: String,
+        name: String,
+        pieces: Vec<u8>,
+    }
+
     impl CxxVector<torrent_status> {}
+
+    /// Snapshot of a single peer's current state, returned from peer_info_alert.
+    struct PeerInfoSnapshot {
+        ip:             String,
+        port:           u16,
+        client:         String,
+        down_speed:     i32,
+        up_speed:       i32,
+        total_download: i64,
+        total_upload:   i64,
+        progress:       f32,
+        /// Bitfield: 1=seed, 2=local, 4=interesting, 8=choked, 16=remote_interested, 32=remote_choked
+        flags:          u32,
+        /// Bitfield: 1=tracker, 2=dht, 4=pex, 8=lsd, 16=resume_data
+        source:         u32,
+        country:        String,
+    }
 
     struct AddTorrentParamsValues {
         version: i32,
@@ -309,10 +349,15 @@ pub(crate) mod ffi {
     unsafe extern "C++" {
         include!("cpp/lt.h");
 
+        type IpFilterWrapper;
+        type FileStorageWrapper;
+        type CreateTorrentWrapper;
+
         type Error = crate::ffi::error::ffi::Error;
 
         fn lt_add_torrent_params_make_magnet_uri(params: &add_torrent_params) -> String;
         fn lt_parse_magnet_uri(uri: &str) -> ParseMagnetUriResult;
+        unsafe fn lt_add_torrent_params_file_paths(params: *mut add_torrent_params) -> Vec<String>;
         fn set_add_torrent_params_storage_mode(params: Pin<&mut add_torrent_params>, mode: u8);
 
         // ╔===========================================================================╗
@@ -338,6 +383,16 @@ pub(crate) mod ffi {
 
         fn lt_session_pop_alerts(session: Pin<&mut session>) -> Vec<CastAlertRaw>;
         fn lt_session_post_torrent_updates(session: Pin<&mut session>, flags: u32);
+        fn lt_session_get_torrent_hashes(session: Pin<&mut session>) -> Vec<InfoHashCpp>;
+        fn lt_session_find_torrent(
+            session: Pin<&mut session>,
+            info_hash_hex: &str,
+        ) -> UniquePtr<torrent_handle>;
+        fn lt_session_save_state(session: Pin<&mut session>) -> Vec<u8>;
+        fn lt_session_load_state(session: Pin<&mut session>, data: &[u8]);
+        fn lt_session_apply_settings(session: Pin<&mut session>, settings: &settings_pack);
+        fn lt_session_set_ip_filter(session: Pin<&mut session>, f: &IpFilterWrapper);
+        fn lt_session_get_ip_filter(session: Pin<&mut session>) -> UniquePtr<IpFilterWrapper>;
 
         // ╔===========================================================================╗
         // ║                               Settings Pack                               ║
@@ -345,15 +400,49 @@ pub(crate) mod ffi {
 
         fn lt_create_settings_pack() -> UniquePtr<settings_pack>;
         fn lt_set_alert_mask(pack: Pin<&mut settings_pack>, mask: u32);
+        fn lt_settings_set_upload_rate_limit(pack: Pin<&mut settings_pack>, val: i32);
+        fn lt_settings_set_download_rate_limit(pack: Pin<&mut settings_pack>, val: i32);
+        fn lt_settings_set_connections_limit(pack: Pin<&mut settings_pack>, val: i32);
+        fn lt_settings_set_active_downloads(pack: Pin<&mut settings_pack>, val: i32);
+        fn lt_settings_set_active_seeds(pack: Pin<&mut settings_pack>, val: i32);
+        fn lt_settings_set_active_limit(pack: Pin<&mut settings_pack>, val: i32);
+        fn lt_settings_set_seed_time_ratio_limit(pack: Pin<&mut settings_pack>, val: i32);
+        fn lt_settings_set_seed_time_limit(pack: Pin<&mut settings_pack>, val: i32);
+        fn lt_settings_set_share_ratio_limit(pack: Pin<&mut settings_pack>, val: f32);
+        fn lt_settings_set_max_failcount(pack: Pin<&mut settings_pack>, val: i32);
+        fn lt_settings_set_dht_enabled(pack: Pin<&mut settings_pack>, val: bool);
+        fn lt_settings_set_lsd_enabled(pack: Pin<&mut settings_pack>, val: bool);
+        fn lt_settings_set_upnp_enabled(pack: Pin<&mut settings_pack>, val: bool);
+        fn lt_settings_set_natpmp_enabled(pack: Pin<&mut settings_pack>, val: bool);
+        fn lt_set_listen_interfaces(pack: Pin<&mut settings_pack>, value: &str);
+        fn lt_set_outgoing_interfaces(pack: Pin<&mut settings_pack>, value: &str);
+        fn lt_set_proxy_settings(
+            pack: Pin<&mut settings_pack>,
+            proxy_kind: u8,
+            hostname: &str,
+            port: u16,
+            username: &str,
+            password: &str,
+            authenticated: bool,
+        );
 
         // ╔===========================================================================╗
         // ║                            Add Torrent Params                             ║
         // ╚===========================================================================╝
 
         unsafe fn lt_set_add_torrent_params_path(params: *mut add_torrent_params, path: &str);
+        unsafe fn lt_set_add_torrent_params_total_uploaded(
+            params: *mut add_torrent_params,
+            val: i64,
+        );
+        unsafe fn lt_set_add_torrent_params_total_downloaded(
+            params: *mut add_torrent_params,
+            val: i64,
+        );
         unsafe fn lt_add_torrent_params_info_hash(params: *mut add_torrent_params) -> InfoHashCpp;
         unsafe fn lt_write_resume_data_buf(params: *mut add_torrent_params) -> Vec<u8>;
         unsafe fn lt_read_resume_data(buf: &[u8]) -> UniquePtr<add_torrent_params>;
+        fn lt_add_torrent_params_from_torrent_bytes(data: &[u8]) -> ParseMagnetUriResult;
 
         // ╔===========================================================================╗
         // ║                              Torrent Handle                               ║
@@ -376,10 +465,41 @@ pub(crate) mod ffi {
         fn lt_torrent_status_total(status: &torrent_status) -> i64;
         fn lt_torrent_status_download_rate(status: &torrent_status) -> i32;
         fn lt_torrent_status_upload_rate(status: &torrent_status) -> i32;
+        fn lt_torrent_status_snapshot(status: &torrent_status) -> TorrentStatusSnapshot;
+
+        fn lt_ip_filter_new() -> UniquePtr<IpFilterWrapper>;
+        fn lt_ip_filter_add_rule(f: Pin<&mut IpFilterWrapper>, start: &str, end: &str, flags: u32);
+        fn lt_ip_filter_access(f: &IpFilterWrapper, addr: &str) -> u32;
+
+        fn lt_file_storage_new() -> UniquePtr<FileStorageWrapper>;
+        fn lt_add_files(fs: Pin<&mut FileStorageWrapper>, path: &str);
+        fn lt_file_storage_num_files(fs: &FileStorageWrapper) -> i32;
+        fn lt_file_storage_total_size(fs: &FileStorageWrapper) -> i64;
+        fn lt_create_torrent_new(
+            fs: Pin<&mut FileStorageWrapper>,
+            piece_size: i32,
+        ) -> UniquePtr<CreateTorrentWrapper>;
+        fn lt_create_torrent_add_tracker(ct: Pin<&mut CreateTorrentWrapper>, url: &str, tier: i32);
+        fn lt_create_torrent_set_comment(ct: Pin<&mut CreateTorrentWrapper>, comment: &str);
+        fn lt_create_torrent_set_creator(ct: Pin<&mut CreateTorrentWrapper>, creator: &str);
+        fn lt_create_torrent_set_priv(ct: Pin<&mut CreateTorrentWrapper>, priv_flag: bool);
+        fn lt_set_piece_hashes(ct: Pin<&mut CreateTorrentWrapper>, base_path: &str) -> String;
+        fn lt_create_torrent_generate(ct: Pin<&mut CreateTorrentWrapper>) -> Vec<u8>;
 
         // ╔===========================================================================╗
         // ║                                  Alerts                                   ║
         // ╚===========================================================================╝
+
+        // peer_info_alert
+        unsafe fn lt_alert_peer_info_cast(alert: *mut alert) -> *mut peer_info_alert;
+        unsafe fn lt_alert_peer_info_handle(alert: *mut peer_info_alert) -> UniquePtr<torrent_handle>;
+        unsafe fn lt_alert_peer_info_peers(alert: *mut peer_info_alert) -> Vec<PeerInfoSnapshot>;
+
+        // file_renamed_alert
+        unsafe fn lt_alert_file_renamed_cast(alert: *mut alert) -> *mut file_renamed_alert;
+        unsafe fn lt_alert_file_renamed_handle(alert: *mut file_renamed_alert) -> UniquePtr<torrent_handle>;
+        unsafe fn lt_alert_file_renamed_index(alert: *mut file_renamed_alert) -> i32;
+        unsafe fn lt_alert_file_renamed_new_name(alert: *mut file_renamed_alert) -> String;
 
     }
 }

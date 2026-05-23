@@ -9,5 +9,6 @@ pub(crate) mod ffi {
 
         unsafe fn file_renamed_alert_get_old_name<'a>(alert: *mut file_renamed_alert) -> &'a str;
         unsafe fn file_renamed_alert_get_new_name<'a>(alert: *mut file_renamed_alert) -> &'a str;
+        unsafe fn file_renamed_alert_get_index(alert: *mut file_renamed_alert) -> i32;
     }
 }

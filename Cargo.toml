@@ -27,6 +27,7 @@ num_enum = { version = "0.7.5" }
 cxx-build = "1.0.186"
 cmake = "0.1.54"
 cfg-if = "1.0.4"
+anyhow = "1"
 
 [features]
 default = ["static-libtorrent"]
@@ -35,3 +36,5 @@ lto = []
 static-libtorrent = []
 static-boost = []
 static-ssl = []
+# build and run libtorrent's own C++ test suite (requires cmake + ctest)
+lt-tests = []
