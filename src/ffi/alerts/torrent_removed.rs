@@ -6,7 +6,7 @@ pub(crate) mod ffi {
     }
     unsafe extern "C++" {
         include!("cpp/alerts/torrent_removed.h");
-        include!("lt-rs/src/ffi/mod.rs.h");
+        include!("libtorrent-rs/src/ffi/mod.rs.h");
         type InfoHashCpp = crate::ffi::ffi::InfoHashCpp;
 
         unsafe fn torrent_removed_alert_get_info_hashes(

@@ -1,1 +1,4 @@
-target
+/target/
+# libtorrent test suite temp directories
+test_tmp_*/
+

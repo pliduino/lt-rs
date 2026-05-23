@@ -1,4 +1,4 @@
-#[cfg_attr(feature = "safe_enums", derive(num_enum::FromPrimitive))]
+#[derive(num_enum::FromPrimitive)]
 #[repr(u8)]
 pub enum PerformanceWarning {
     /// This warning means that the number of bytes queued to be written to disk
@@ -79,20 +79,12 @@ pub enum PerformanceWarning {
     TooFewOutgoingPorts,
 
     TooFewFileDescriptors,
-
-    #[cfg(feature = "safe_enums")]
     #[num_enum(default)]
     UnknownError,
 }
 
 impl PerformanceWarning {
     pub(crate) fn from_u8(v: u8) -> Self {
-        cfg_if::cfg_if! {
-            if #[cfg(feature = "safe_enums")] {
-                v.into()
-            } else {
-                unsafe { std::mem::transmute(v) }
-            }
-        }
+        v.into()
     }
 }

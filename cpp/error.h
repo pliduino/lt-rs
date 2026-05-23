@@ -1,6 +1,6 @@
 #pragma once
 
-#include "lt-rs/src/ffi/error.rs.h"
+#include "libtorrent-rs/src/ffi/error.rs.h"
 #include <libtorrent/error_code.hpp>
 
 namespace ltrs {

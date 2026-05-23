@@ -1,37 +1,27 @@
 [package]
-name = "lt-rs"
-version = "0.1.4"
+name = "libtorrent-rs"
+version = "0.1.0"
 edition = "2024"
-authors = ["Zkojin <zkojin@proton.me>"]
-description = "Safe Libtorrent bindings for rust"
-repository = "https://github.com/zko-jin/lt-rs"
-keywords = ["libtorrent", "bittorrent", "torrent"]
-categories = ["api-bindings", "network-programming"]
-readme = "README.md"
+description = "Safe Rust bindings for libtorrent"
 license = "MIT"
 
-[lints.rust]
-dead_code = "allow"
-
-[dependencies]
-tracing = "0.1.41"
-cxx = "1.0.186"
-bitflags = "2.9.4"
-thiserror = "2.0.16"
-base64 = "0.22.1"
-paste = "1.0.15"
-cfg-if = "1.0.4"
-num_enum = { version = "0.7.5" }
-
-[build-dependencies]
-cxx-build = "1.0.186"
-cmake = "0.1.54"
-cfg-if = "1.0.4"
-
 [features]
-default = ["static-libtorrent"]
+default = []
 safe_enums = []
 lto = []
-static-libtorrent = []
-static-boost = []
-static-ssl = []
+# build and run libtorrent's own C++ test suite (requires cmake + system libtorrent)
+lt-tests = []
+
+[dependencies]
+base64 = "0.22"
+bitflags = "2"
+cfg-if = "1"
+cxx = "1"
+paste = "1"
+thiserror = "2"
+tracing = "0.1"
+num_enum = { version = "0.7" }
+
+[build-dependencies]
+anyhow = "1"
+cxx-build = "1"
